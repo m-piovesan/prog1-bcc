@@ -6,10 +6,10 @@
  * Retorna NULL em caso de erro de alocação.
 */
 fila_t *fila_cria () {
-    struct fila *f1;
+    fila_t *f1;
     f1 = malloc (sizeof(fila_t));
 
-    if (f1 = NULL)
+    if (f1 == NULL)
         return NULL;
 
     f1->cabeca = NULL;
@@ -20,8 +20,19 @@ fila_t *fila_cria () {
 }
 
 /* Desaloca toda memoria da fila e faz fila receber NULL. */
-void fila_destroi (fila_t **fila) {
-
+void fila_destroi(fila_t **fila) {
+    if ((fila == NULL) || (*fila == NULL)) {
+        return;
+    }
+    
+    while ((*fila)->cabeca != NULL) {
+        nodo_t *remove = (*fila)->cabeca;
+        (*fila)->cabeca = (*fila)->cabeca->prox;
+        free(remove);
+    }
+    
+    free(*fila);
+    *fila = NULL;
 }
 
 /* 
@@ -32,14 +43,24 @@ int enqueue (fila_t *fila, int dado) {
     nodo_t *novoDado;
     novoDado = malloc(sizeof(nodo_t));
 
+    if (novoDado == NULL)
+        return 0;
+
     novoDado->dado = dado;
     novoDado->prox = NULL;
 
-    if(fila_vazia(fila))
+    if(fila_vazia(fila)) {
         fila->cabeca = novoDado;
+        fila->cauda = novoDado;
+    } else {
+/*não entendi pq tanto o cauda quanto o cauda->prox recebem a mesma coisa*/
+        fila->cauda->prox = novoDado;
+        fila->cauda = novoDado;
+    }
 
-    fila->cauda->prox = novoDado;
     fila->tamanho++;
+
+    return 1;
 }
 
 /* 
@@ -48,11 +69,29 @@ int enqueue (fila_t *fila, int dado) {
  * A funcao retorna 1 em caso de sucesso e 0 no caso da fila estar vazia.
 */
 int dequeue (fila_t *fila, int *dado) {
+    if(fila_vazia(fila))
+        return 0;
 
+    nodo_t *remove;
+    remove = fila->cabeca;
+    *dado = remove->dado;
+
+    if (fila->cabeca == fila->cauda) {
+        fila->cabeca = NULL;
+        fila->cauda = NULL;
+    } else {
+        fila->cabeca = fila->cabeca->prox;
+    }
+    
+    free(remove);
+    fila->tamanho--;
+    
+    return 1;
 }
 
 /* Retorna o numero de elementos da fila, que pode ser 0. */
 int fila_tamanho (fila_t *fila) {
+/* possível erro aqui */
     if (fila!=NULL) 
         return fila->tamanho;    
     return -1;
@@ -60,7 +99,7 @@ int fila_tamanho (fila_t *fila) {
 
 /* Retorna 1 se fila vazia, 0 em caso contrario. */ 
 int fila_vazia (fila_t *fila) {
-    if (fila_tamanho == 0)
+    if (fila_tamanho(fila) == 0)
         return 1;
     return 0;
 }
