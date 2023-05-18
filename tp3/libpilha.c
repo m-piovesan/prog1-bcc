@@ -10,11 +10,9 @@
 pilha_t *pilha_cria () {
    pilha_t *p1;
 
-
    p1 = malloc(sizeof(pilha_t));
    p1->topo = NULL;
    p1->tamanho = 0;
-
 
    return p1;
 }
@@ -22,21 +20,17 @@ pilha_t *pilha_cria () {
 
 /* Desaloca toda memoria da pilha e faz pilha receber NULL. */
 void pilha_destroi (pilha_t **pilha) {
-   nodo_t **aux;
-   *aux = &pilha->topo->prox;
-
-
-       // *dado = pilha->topo->dado;
-       // pilha->topo = pilha->topo->prox;
-
-
-       // free(aux);
-       // aux = NULL;
-
-
-       // pilha->tamanho--;
-
-
+    if ((pilha == NULL) || (*pilha == NULL)) 
+        return;
+    
+    while ((*pilha)->topo != NULL) {
+        nodo_t *remove = (*pilha)->topo;
+        (*pilha)->topo = (*pilha)->topo->prox;
+        free(remove);
+    }
+    
+    free(*pilha);
+    *pilha = NULL;
 }
 
 
@@ -49,20 +43,16 @@ int pop (pilha_t *pilha, int *dado) {
    if(!pilha_vazia(pilha)) {
        nodo_t *aux;
        aux = pilha->topo;
+       *dado = aux->dado;
 
-
-       *dado = pilha->topo->dado;
        pilha->topo = pilha->topo->prox;
-
 
        free(aux);
        aux = NULL;
-
-
        pilha->tamanho--;
+       
        return 1;
    }
-
 
    return 0;
 }
@@ -72,32 +62,35 @@ int pop (pilha_t *pilha, int *dado) {
 Insere dado na pilha (politica LIFO).
 Retorna 1 em caso de sucesso e 0 em caso de falha.
 */
+
+/*
+Explicação: o novoNodo->prox vai receber o topo da pilha (entrou mais alguém na fila)
+            depois o topo da pilha vai apontar pro novoNodo, que por sua vez, virou o final (topo) da fila
+*/
 int push (pilha_t *pilha, int dado) {
-
-
-   nodo_t *novoNodo;
-   novoNodo = malloc(sizeof(nodo_t));
+    nodo_t *novoNodo;
+    novoNodo = malloc(sizeof(nodo_t));
   
-   if (novoNodo == NULL)
+    if (novoNodo == NULL)
        return 0;
   
-   novoNodo->dado = dado;
-   novoNodo->prox = pilha->topo->prox;
+    novoNodo->dado = dado;
+    novoNodo->prox = NULL;
 
-
-   pilha->topo->prox = novoNodo;
-   pilha->tamanho++;
-
+    novoNodo->prox = pilha->topo;
+    pilha->topo = novoNodo;
+    pilha->tamanho++;
 
    return 1;
 }
+
 /* Similar ao pop, mas retorna o elemento dado sem remove-lo. */
 int pilha_topo (pilha_t *pilha, int *dado) {
-   if (!pilha_vazia(pilha)) {
+    if (!pilha_vazia(pilha)) {
        *dado = pilha->topo->dado;
        return 1;
-   }
-   return 0;
+    }
+    return 0;
 }
 
 
@@ -105,18 +98,12 @@ int pilha_topo (pilha_t *pilha, int *dado) {
 int pilha_tamanho (pilha_t *pilha) {
    if (!pilha_vazia(pilha))
        return pilha->tamanho;
-   return -1;
+   return 0;
 }
 
-
+/* Retorna 1 se pilha vazia, 0 em caso contrario. */ 
 int pilha_vazia (pilha_t *pilha) {
-   if (pilha) {
-       if (!(pilha->topo))
-           /* pilha vazia */
-           return 1;
-       /* pilha não-vazia */
-       return 0;  
-   }
-   /* pilha não-inicializada */
-   return -1;
+    if (!(pilha->topo))
+        return 1;
+    return 0;  
 }
