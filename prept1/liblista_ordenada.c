@@ -36,6 +36,27 @@ int lista_insere_ordenado (lista_t *l, elemento_t *elemento) {
  * Retorna 1 em caso de sucesso e 0 caso elemento nao esteja na Lista.
 */
 int lista_remove_ordenado (lista_t *l, elemento_t *elemento) {
+    if(lista_vazia(l))
+        return 0;
+
+    nodo_t *aux = l->ini;
+
+    if (elemento->chave == l->ini->elemento->chave) {
+        l->ini = l->ini->prox;
+        
+        free(aux);
+        aux = NULL;
+
+        return 1;
+    }
+    
+    while ((aux->prox->prox != NULL) && (elemento->chave < aux->elemento->chave)) {
+        aux = aux->prox;
+    }
+    
+    if (elemento->chave == aux->elemento->chave) {
+        
+    }
 
 }
 
