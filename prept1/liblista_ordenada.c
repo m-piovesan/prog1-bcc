@@ -35,6 +35,8 @@ int lista_insere_ordenado (lista_t *l, elemento_t *elemento) {
  * Retira o elemento da Lista e a mantem em ordem.
  * Retorna 1 em caso de sucesso e 0 caso elemento nao esteja na Lista.
 */
+
+/* VER SE FUNCIONA PARA LISTAS DE TAMANHO PEQUENO (1/2) */
 int lista_remove_ordenado (lista_t *l, elemento_t *elemento) {
     if(lista_vazia(l))
         return 0;
@@ -50,13 +52,21 @@ int lista_remove_ordenado (lista_t *l, elemento_t *elemento) {
         return 1;
     }
     
-    while ((aux->prox->prox != NULL) && (elemento->chave < aux->elemento->chave)) {
+    while ((aux->prox->prox != NULL) && (elemento->chave < aux->prox->elemento->chave)) {
         aux = aux->prox;
     }
     
-    if (elemento->chave == aux->elemento->chave) {
+    if (elemento->chave == aux->prox->elemento->chave) {
+        aux->prox = aux->prox->prox;
         
+        aux = aux->prox;
+        free(aux);
+        aux = NULL;
+
+        return 1;
     }
+
+    return 0;
 
 }
 
