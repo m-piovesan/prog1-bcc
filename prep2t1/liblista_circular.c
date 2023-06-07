@@ -52,6 +52,7 @@ int lista_insere_ordenado(lista_t *l, elemento_t *elemento) {
     novo->prev = NULL;
     novo->prox = NULL;
 
+    /* CASO A FILA ESTIVER VAZIA */
     if (l->ini == NULL) {
         l->ini = novo;
         novo->prox = novo;
@@ -62,19 +63,29 @@ int lista_insere_ordenado(lista_t *l, elemento_t *elemento) {
     nodo_t *aux = l->ini;
 
     /* CASO A FILA TENHA SÓ UM NODO */
-    if (aux->prox == l->ini) {
+    if (aux->prox == aux) {
+        if (elemento->chave <= aux->elemento->chave)
+            l->ini = novo;
+        
         novo->prev = aux;
         novo->prox = aux;
             
         aux->prev = novo;
         aux->prox = novo;
+        
+        return 1;
+    }
 
-        if (elemento->chave <= aux->elemento->chave) {
-            l->ini = novo;
-            return 1;
-        }
+    /* CASO O NOVO ELEMENTO SEJA MENOR DO QUE O PRIMEIRO DA LISTA */
+    if (elemento->chave < aux->elemento->chave) {
+        novo->prox = aux;
+        novo->prev = aux->prev;
+
+        aux->prev->prox = novo;
+        aux->prev = novo;
 
         l->ini = novo;
+
         return 1;
     }
 
@@ -106,13 +117,14 @@ int lista_remove_ordenado(lista_t *l, elemento_t *elemento) {
 
     /* Verifica se o elemento a ser removido é o primeiro da lista */
     if (elemento->chave == aux->elemento->chave) {
+        aux->prev->prox = aux->prox;
+        aux->prox->prev = aux->prev;
+        
         l->ini = aux->prox;
-        l->ini->prev = aux->prev;  // Atualiza o ponteiro prev do novo primeiro nó
     
         free(aux);
         return 1;
     }
-
     
     /* Percorre a lista até encontrar o elemento a ser removido */
     while (aux->prox != l->ini && elemento->chave > aux->prox->elemento->chave) {

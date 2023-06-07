@@ -13,6 +13,9 @@ void imprime_lista(lista_t *l) {
         aux = aux->prox;
     } while (aux != l->ini);
 
+    free(aux);
+    aux = NULL;
+    
     printf("\n");
 }
 
@@ -25,9 +28,9 @@ int main() {
     elemento_t *elem2 = malloc(sizeof(elemento_t));
     elemento_t *elem3 = malloc(sizeof(elemento_t));
     
-    elem1->chave = 10;
-    elem2->chave = 5;
-    elem3->chave = 8;
+    elem1->chave = 2;
+    elem2->chave = 0;
+    elem3->chave = 1;
 
     lista_insere_ordenado(lista, elem1);
     lista_insere_ordenado(lista, elem2);
