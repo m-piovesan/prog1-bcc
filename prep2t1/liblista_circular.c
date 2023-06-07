@@ -1,19 +1,19 @@
-#include "liblista_ordenada.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include "liblista_circular.h"
 
 /* 
  * Cria uma Lista vazia 
 */
 lista_t *lista_cria () {
-    lista_t *nova_lista = malloc(sizeof(lista_t));
+    lista_t *novaLista = malloc(sizeof(lista_t));
 
-    if (nova_lista == NULL)
+    if (lista_vazia(novaLista))
         return NULL;
 
-    nova_lista->ini = NULL;
+    novaLista->ini = NULL;
 
-    return nova_lista;
+    return novaLista;
 }
 
 /* 
@@ -23,9 +23,9 @@ void lista_destroi(lista_t **l) {
     if (l == NULL || *l == NULL)
         return;
 
-    nodo_t *atual = (*l)->ini;
+    nodo_t *atual = (*l)->ini->prox;
 
-    while (atual != NULL) {
+    while (atual != NULL && atual != (*l)->ini) {
         nodo_t *aux = atual;
         atual = atual->prox;
         free(aux->elemento);
@@ -43,43 +43,56 @@ void lista_destroi(lista_t **l) {
 int lista_insere_ordenado(lista_t *l, elemento_t *elemento) {
     if (lista_vazia(l))
         return 0;
-    
-    nodo_t *novo = malloc(sizeof(nodo_t));
-    novo->elemento = elemento;
 
+    nodo_t *novo = malloc(sizeof(nodo_t));
     if (novo == NULL)
         return 0;
 
+    novo->elemento = elemento;
+    novo->prev = NULL;
+    novo->prox = NULL;
+
     if (l->ini == NULL) {
         l->ini = novo;
-        novo->prox = NULL;
+        novo->prox = novo;
+        novo->prev = novo;
         return 1;
     }
 
     nodo_t *aux = l->ini;
 
     /* CASO A FILA TENHA SÓ UM NODO */
-    if ((aux->prox == NULL) || (novo->elemento->chave <= aux->elemento->chave)) {
+    if (aux->prox == l->ini) {
+        novo->prev = aux;
+        novo->prox = aux;
+            
+        aux->prev = novo;
+        aux->prox = novo;
+
         if (elemento->chave <= aux->elemento->chave) {
-            novo->prox = aux;
             l->ini = novo;
             return 1;
         }
-        aux->prox = novo;
-        novo->prox = NULL;
+
+        l->ini = novo;
         return 1;
     }
 
     /* CASO TENHA MAIS DE UM */
-    while (aux->prox != NULL && novo->elemento->chave > aux->prox->elemento->chave) {
+    while (aux->prox != l->ini && novo->elemento->chave > aux->prox->elemento->chave) {
         aux = aux->prox;
     }
 
     novo->prox = aux->prox;
+    novo->prev = aux;
+
     aux->prox = novo;
+
+    if (novo->prox == l->ini) 
+        l->ini->prev = novo;
+    
     return 1;
 }
-
 
 /* 
  * Retira o elemento da Lista e a mantem em ordem.
@@ -94,22 +107,23 @@ int lista_remove_ordenado(lista_t *l, elemento_t *elemento) {
     /* Verifica se o elemento a ser removido é o primeiro da lista */
     if (elemento->chave == aux->elemento->chave) {
         l->ini = aux->prox;
-        
+        l->ini->prev = aux->prev;  // Atualiza o ponteiro prev do novo primeiro nó
+    
         free(aux);
         return 1;
     }
+
     
     /* Percorre a lista até encontrar o elemento a ser removido */
-    while (aux->prox != NULL && elemento->chave > aux->prox->elemento->chave) {
+    while (aux->prox != l->ini && elemento->chave > aux->prox->elemento->chave) {
         aux = aux->prox;
     }
     
     /* Verifica se o elemento foi encontrado e realiza a remoção */
-    if (aux->prox != NULL && elemento->chave == aux->prox->elemento->chave) {
-        nodo_t *temp = aux->prox;
-        aux->prox = temp->prox;
+    if (aux->prox != l->ini && elemento->chave == aux->prox->elemento->chave) {
+        aux->prox = aux->prox->prox;
+        aux->prox->prev = aux;
         
-        free(temp);
         return 1;
     }
 
@@ -117,8 +131,8 @@ int lista_remove_ordenado(lista_t *l, elemento_t *elemento) {
     return 0;
 }
 
-
-int lista_vazia(lista_t *l) {
+/* Retorna 1 se a lista esta vazia e 0 caso contrario */
+int lista_vazia (lista_t *l) {
     if (l == NULL)
         return 1;
     return 0;
