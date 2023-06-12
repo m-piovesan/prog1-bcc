@@ -23,8 +23,14 @@ agenda_t* cria_agenda() {
    id e uma string de descricao. A funcao deve alocar um novo espaco de 
    armazenamento para receber a string descricao. 
 */ 
-compromisso_t* cria_compromisso (horario_compromisso_t hc, int id,  char* descricao) {
+compromisso_t* cria_compromisso (horario_compromisso_t hc, int id, char* descricao) {
+    compromisso_t *novoCompr = malloc(sizeof(compromisso_t));
 
+    novoCompr->descricao = descricao;
+    novoCompr->fim = hc->;
+    novoCompr->inicio = ;
+    novoCompr->id = id;
+    novoCompr->prox 
 }
 
 /* Libera toda memoria associado a agenda. */
@@ -56,7 +62,8 @@ int desmarca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr)
 
 /* Imprime a agenda do mes atual (mes atual) */
 void imprime_agenda_mes(agenda_t* agenda) {
-
+    printf("%d",agenda->mes_atual);
+    return;
 }
 
 /* Retorna o mes atual da agenda. */
@@ -64,10 +71,15 @@ int mes_atual_agenda(agenda_t *agenda) {
     return agenda->mes_atual;
 }
 
-/* Ajusta o mes_atual para 1; caso o mes esteja alocado, ptr_mes_atual
- * apontara para o mes 1, caso contrario para NULL. */
+/* Ajusta o mes_atual para 1 e aponta prt_mes_atual para o mes 1 na Lista de 
+ * meses  */
 void prim_mes_agenda(agenda_t* agenda) {
+    agenda->mes_atual = 1;
 
+    while (agenda->ptr_mes_atual->mes != 1)
+        agenda->ptr_mes_atual = agenda->ptr_mes_atual->ant;
+
+    return;
 }
 
 /* Avanca a agenda para o proximo mes, incrementando mes_atual.
