@@ -8,10 +8,19 @@
     ptr_mes_atual deve ser definido. 
 */
 agenda_t* cria_agenda() {
-    agenda_t *novaAg;
+    agenda_t *novaAg; 
     novaAg = malloc(sizeof(agenda_t));
+
+    if(novaAg == NULL)
+        return NULL;
     
     novaAg->ptr_mes_atual = malloc(sizeof(mes_t));
+
+    if (novaAg->ptr_mes_atual == NULL) {
+        free(novaAg);
+        return NULL;
+    }
+    
     novaAg->mes_atual = 1;
 
     return novaAg;
@@ -23,14 +32,28 @@ agenda_t* cria_agenda() {
    id e uma string de descricao. A funcao deve alocar um novo espaco de 
    armazenamento para receber a string descricao. 
 */ 
-compromisso_t* cria_compromisso (horario_compromisso_t hc, int id, char* descricao) {
-    compromisso_t *novoCompr = malloc(sizeof(compromisso_t));
+compromisso_t* cria_compromisso(horario_compromisso_t hc, int id, char* descricao, size_t tamanho_descricao) {
+    compromisso_t* novoCompr = malloc(sizeof(compromisso_t));
+    
+    if (novoCompr == NULL) {
+        return NULL;
+    }
 
-    novoCompr->descricao = descricao;
-    novoCompr->fim = hc->;
-    novoCompr->inicio = ;
+    novoCompr->descricao = malloc(tamanho_descricao + 1); // +1 para o caractere nulo de terminação
+    
+    if (novoCompr->descricao == NULL) {
+        free(novoCompr); 
+        return NULL; 
+    }
+
+    strcpy(novoCompr->descricao, descricao); // Copiar a string de descrição para o novo local alocado
+    
     novoCompr->id = id;
-    novoCompr->prox 
+    novoCompr->inicio = hc.ini_h;
+    novoCompr->fim = hc.fim_h;
+    novoCompr->prox = NULL;
+
+    return novoCompr;
 }
 
 /* Libera toda memoria associado a agenda. */
@@ -62,8 +85,7 @@ int desmarca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr)
 
 /* Imprime a agenda do mes atual (mes atual) */
 void imprime_agenda_mes(agenda_t* agenda) {
-    printf("%d",agenda->mes_atual);
-    return;
+    
 }
 
 /* Retorna o mes atual da agenda. */
