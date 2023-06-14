@@ -82,8 +82,9 @@ typedef struct horario_compromisso {
 /* Cria um compromisso:
    Retorna um compromisso com as informacoes de data de hc, um identificador
    id e uma string de descricao. A funcao deve alocar um novo espaco de 
-   armazenamento para receber a string descricao. */ 
-compromisso_t* cria_compromisso (horario_compromisso_t hc, int id,  char* descricao);
+   armazenamento para receber a string descricao.  
+*/
+compromisso_t *cria_compromisso(horario_compromisso_t hc, int id, char *descricao);
 
 /* Libera toda memoria associado a agenda. */
 void destroi_agenda(agenda_t* agenda);

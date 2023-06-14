@@ -32,14 +32,14 @@ agenda_t* cria_agenda() {
    id e uma string de descricao. A funcao deve alocar um novo espaco de 
    armazenamento para receber a string descricao. 
 */ 
-compromisso_t* cria_compromisso(horario_compromisso_t hc, int id, char* descricao, size_t tamanho_descricao) {
+compromisso_t* cria_compromisso(horario_compromisso_t hc, int id, char* descricao) {
     compromisso_t* novoCompr = malloc(sizeof(compromisso_t));
     
     if (novoCompr == NULL) {
         return NULL;
     }
 
-    novoCompr->descricao = malloc(tamanho_descricao + 1); // +1 para o caractere nulo de terminação
+    novoCompr->descricao = malloc(strlen(descricao) + 1); // +1 para o caractere nulo de terminação
     
     if (novoCompr->descricao == NULL) {
         free(novoCompr); 
@@ -80,12 +80,17 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
     1: em caso de sucesso
     0: caso nao tenha encontrado o compr */
 int desmarca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
-
+    /*  tem que achar o compromisso indicado por compr na agenda,
+        daí colocar pro (anterior dele)->prox receber compr->prox
+        depois dar um free no compr e apontar ele pra NULL?
+    */  
 }
 
 /* Imprime a agenda do mes atual (mes atual) */
 void imprime_agenda_mes(agenda_t* agenda) {
-    
+    /*  dois while, um pra ir passando os compromissos do dia
+        outro pra ir passando os dias do mês 
+    */
 }
 
 /* Retorna o mes atual da agenda. */
@@ -127,13 +132,21 @@ compromisso_t* compr_agenda(agenda_t* agenda, int dia) {
 /* Retorna o primeiro compromisso da lista de compromissos compr e avanca
  * para o prox. Retorna NULL se a lista esta vazia, ou seja, sem compromissos.*/
 compromisso_t* prox_compr(compromisso_t* compr) {
+    if (compr == NULL)
+        return NULL;
 
+    compromisso_t *aux = compr;
+    compr = compr->prox;
+
+    return aux;
 }
 
 /* As funcoes abaixo sao usadas para acessar os membros da struct compromisso
    obtidos com a funcao prox_compr. */
 horario_compromisso_t hc_compr(compromisso_t* compr) {
+    horario_compromisso_t horario;
 
+    horario.ini_h = compr->inicio;
 }
 
 int id_compr(compromisso_t* compr) {
