@@ -87,10 +87,27 @@ int desmarca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr)
 }
 
 /* Imprime a agenda do mes atual (mes atual) */
-void imprime_agenda_mes(agenda_t* agenda) {
-    /*  dois while, um pra ir passando os compromissos do dia
-        outro pra ir passando os dias do mês 
-    */
+void imprime_agenda_mes(agenda_t* agenda) {   
+
+    dia_t *auxDias = agenda->ptr_mes_atual->dias;
+    compromisso_t *auxCompr = auxDias->comprs;
+
+    while(auxDias != NULL) {
+        while (auxCompr != NULL) {
+            printf("ID: %d\n",auxCompr->id);
+            printf("Início (horas): %d\n",auxCompr->inicio);
+            printf("Fim (horas): %d\n",auxCompr->fim);
+            printf("Descrição: %s\n",auxCompr->descricao);
+            printf("\n");
+
+            auxCompr = auxCompr->prox;
+        }
+
+        auxDias = auxDias->prox;
+        auxCompr = auxDias->comprs;
+    }
+
+    return;
 }
 
 /* Retorna o mes atual da agenda. */
