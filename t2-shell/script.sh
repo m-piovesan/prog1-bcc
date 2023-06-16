@@ -213,91 +213,77 @@ calcular_media_frequencia_reprovados "historico-alg1_SIGA_ANONIMIZADO.csv"
 
 calcular_porcentagem_evasoes "historico-alg1_SIGA_ANONIMIZADO.csv"
 
-# Função para comparar o rendimento durante os anos de pandemia
-comparar_rendimento_pandemia() {
-    local arquivo_entrada=$1
+arquivo_entrada="historico-alg1_SIGA_ANONIMIZADO.csv"
+coluna_ano=5
+coluna_status=10
+coluna_nota=8
+coluna_frequencia=9
 
-    # Anos de pandemia
-    local anos_pandemia="2020 2021"
+# Função para calcular o percentual
+calcular_percentual() {
+    local total=$1
+    local valor=$2
 
-    # Total de alunos nos anos de pandemia
-    local total_alunos_pandemia=0
+    percentual=$(awk -v total="$total" -v valor="$valor" 'BEGIN { printf "%.2f\n", (valor * 100) / total }')
 
-    # Total de aprovados nos anos de pandemia
-    local total_aprovados_pandemia=0
-
-    # Total de reprovados nos anos de pandemia
-    local total_reprovados_pandemia=0
-
-    # Total de cancelamentos nos anos de pandemia
-    local total_cancelamentos_pandemia=0
-
-    # Total de alunos nos anos anteriores à pandemia
-    local total_alunos_anteriores=0
-
-    # Total de aprovados nos anos anteriores à pandemia
-    local total_aprovados_anteriores=0
-
-    # Total de reprovados nos anos anteriores à pandemia
-    local total_reprovados_anteriores=0
-
-    # Total de cancelamentos nos anos anteriores à pandemia
-    local total_cancelamentos_anteriores=0
-
-    # Loop pelos anos para calcular os totais
-    while IFS= read -r linha; do
-        local ano=$(echo "$linha" | cut -d',' -f5)
-        local status=$(echo "$linha" | cut -d',' -f10)
-
-        # Verificar se o ano está dentro dos anos de pandemia
-        if [[ $anos_pandemia =~ $ano ]]; then
-            ((total_alunos_pandemia++))
-
-            if [[ $status == "Aprovado" ]]; then
-                ((total_aprovados_pandemia++))
-            elif [[ $status == "Reprovado" ]]; then
-                ((total_reprovados_pandemia++))
-            elif [[ $status == "Cancelado" ]]; then
-                ((total_cancelamentos_pandemia++))
-            fi
-        else
-            ((total_alunos_anteriores++))
-
-            if [[ $status == "Aprovado" ]]; then
-                ((total_aprovados_anteriores++))
-            elif [[ $status == "Reprovado" ]]; then
-                ((total_reprovados_anteriores++))
-            elif [[ $status == "Cancelado" ]]; then
-                ((total_cancelamentos_anteriores++))
-            fi
-        fi
-    done < "$arquivo_entrada"
-
-    # Cálculo dos percentuais
-    local percentual_aprovados_pandemia=$(awk -v total_aprovados_pandemia="$total_aprovados_pandemia" -v total_alunos_pandemia="$total_alunos_pandemia" 'BEGIN{ printf "%.2f", (total_aprovados_pandemia * 100) / total_alunos_pandemia }')
-    local percentual_reprovados_pandemia=$(awk -v total_reprovados_pandemia="$total_reprovados_pandemia" -v total_alunos_pandemia="$total_alunos_pandemia" 'BEGIN{ printf "%.2f", (total_reprovados_pandemia * 100) / total_alunos_pandemia }')
-    local percentual_cancelamentos_pandemia=$(awk -v total_cancelamentos_pandemia="$total_cancelamentos_pandemia" -v total_alunos_pandemia="$total_alunos_pandemia" 'BEGIN{ printf "%.2f", (total_cancelamentos_pandemia * 100) / total_alunos_pandemia }')
-
-    local percentual_aprovados_anteriores=$(awk -v total_aprovados_anteriores="$total_aprovados_anteriores" -v total_alunos_anteriores="$total_alunos_anteriores" 'BEGIN{ printf "%.2f", (total_aprovados_anteriores * 100) / total_alunos_anteriores }')
-    local percentual_reprovados_anteriores=$(awk -v total_reprovados_anteriores="$total_reprovados_anteriores" -v total_alunos_anteriores="$total_alunos_anteriores" 'BEGIN{ printf "%.2f", (total_reprovados_anteriores * 100) / total_alunos_anteriores }')
-    local percentual_cancelamentos_anteriores=$(awk -v total_cancelamentos_anteriores="$total_cancelamentos_anteriores" -v total_alunos_anteriores="$total_alunos_anteriores" 'BEGIN{ printf "%.2f", (total_cancelamentos_anteriores * 100) / total_alunos_anteriores }')
-
-    # Exibir os resultados
-    echo "Comparação de rendimento durante a pandemia:"
-    echo "------------------------------------------"
-    echo "Anos de pandemia: 2020 e 2021"
-    echo "------------------------------------------"
-    echo "Percentual de aprovados: $percentual_aprovados_pandemia%"
-    echo "Percentual de reprovados: $percentual_reprovados_pandemia%"
-    echo "Percentual de cancelamentos: $percentual_cancelamentos_pandemia%"
-    echo ""
-    echo "Anos anteriores à pandemia:"
-    echo "------------------------------------------"
-    echo "Percentual de aprovados: $percentual_aprovados_anteriores%"
-    echo "Percentual de reprovados: $percentual_reprovados_anteriores%"
-    echo "Percentual de cancelamentos: $percentual_cancelamentos_anteriores%"
+    echo "$percentual"
 }
 
-# Chamar a função passando o nome do arquivo como argumento
-comparar_rendimento_pandemia "historico-alg1_SIGA_ANONIMIZADO.csv"
+# Filtrar os dados dos anos de pandemia (2020 e 2021)
+dados_pandemia=$(awk -F',' -v a1="2020" -v a2="2021" -v s="Aprovado" 'BEGIN {OFS=","} NR>1 && ($5==a1 || $5==a2) && $10==s {print}' "$arquivo_entrada")
+
+# Contar o total de aprovados nos anos de pandemia
+total_aprovados_pandemia=$(echo "$dados_pandemia" | wc -l)
+# Calcular o percentual de aprovados nos anos de pandemia
+percentual_aprovados_pandemia=$(calcular_percentual "$total_aprovados_pandemia" "$total_aprovados_pandemia")
+
+# Filtrar os dados do período de volta às aulas híbrida em 2022 (período 1)
+dados_hibrido=$(awk -F',' -v a="2022" -v p="1" -v s="Aprovado" 'BEGIN {OFS=","} NR>1 && $5==a && $4==p && $10==s {print}' "$arquivo_entrada")
+
+# Contar o total de aprovados no período de volta às aulas híbrida em 2022
+total_aprovados_hibrido=$(echo "$dados_hibrido" | wc -l)
+# Calcular o percentual de aprovados no período de volta às aulas híbrida em 2022
+percentual_aprovados_hibrido=$(calcular_percentual "$total_aprovados_pandemia" "$total_aprovados_hibrido")
+
+# Filtrar os dados dos anos anteriores ao período de pandemia
+dados_anteriores=$(awk -F',' -v a1="2014" -v a2="2019" -v s="Aprovado" 'BEGIN {OFS=","} NR>1 && ($5>=a1 && $5<=a2) && $10==s {print}' "$arquivo_entrada")
+
+# Contar o total de aprovados nos anos anteriores
+total_aprovados_anteriores=$(echo "$dados_anteriores" | wc -l)
+# Calcular o percentual de aprovados nos anos anteriores
+percentual_aprovados_anteriores=$(calcular_percentual "$total_aprovados_pandemia" "$total_aprovados_anteriores")
+
+# Filtrar os dados de cancelamento nos anos de pandemia
+dados_cancelados_pandemia=$(awk -F',' -v a1="2020" -v a2="2021" -v s="Cancelado" 'BEGIN {OFS=","} NR>1 && ($5==a1 || $5==a2) && $10==s {print}' "$arquivo_entrada")
+
+# Contar o total de cancelamentos nos anos de pandemia
+total_cancelados_pandemia=$(echo "$dados_cancelados_pandemia" | wc -l)
+# Calcular o percentual de cancelamentos nos anos de pandemia
+percentual_cancelados_pandemia=$(calcular_percentual "$total_aprovados_pandemia" "$total_cancelados_pandemia")
+
+# Filtrar os dados de reprovação nos anos de pandemia
+dados_reprovados_pandemia=$(awk -F',' -v a1="2020" -v a2="2021" -v s="Reprovado" 'BEGIN {OFS=","} NR>1 && ($5==a1 || $5==a2) && $10==s {print}' "$arquivo_entrada")
+
+# Contar o total de reprovações nos anos de pandemia
+total_reprovados_pandemia=$(echo "$dados_reprovados_pandemia" | wc -l)
+# Calcular o percentual de reprovações nos anos de pandemia
+percentual_reprovados_pandemia=$(calcular_percentual "$total_aprovados_pandemia" "$total_reprovados_pandemia")
+
+# Exibir os resultados
+echo "Análise de Rendimento nos Anos de Pandemia (2020 e 2021)"
+echo "-------------------------------------------------------"
+echo "Percentual de Aprovados: $percentual_aprovados_pandemia%"
+echo "Percentual de Cancelamentos: $percentual_cancelados_pandemia%"
+echo "Percentual de Reprovações: $percentual_reprovados_pandemia%"
+
+echo
+
+echo "Análise de Rendimento no Período de Volta às Aulas Híbrida (2022 - Período 1)"
+echo "--------------------------------------------------------------------------"
+echo "Percentual de Aprovados: $percentual_aprovados_hibrido%"
+echo
+
+echo "Análise de Rendimento nos Anos Anteriores (2014 a 2019)"
+echo "----------------------------------------------------"
+echo "Percentual de Aprovados: $percentual_aprovados_anteriores%"
 
