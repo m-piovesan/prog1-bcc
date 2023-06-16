@@ -12,10 +12,10 @@ void imprime_lista(lista_t *l) {
         printf("%d ", aux->elemento->chave);
         aux = aux->prox;
     } while (aux != l->ini);
-
+    
     free(aux);
     aux = NULL;
-    
+
     printf("\n");
 }
 

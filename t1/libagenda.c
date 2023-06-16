@@ -131,19 +131,73 @@ void prim_mes_agenda(agenda_t* agenda) {
  * Se o novo mes_atual nao existir deve ser alocado. A funcao retorna o inteiro 
  * mes_atual em caso de sucesso ou 0 caso contrario.  */ 
 int prox_mes_agenda(agenda_t* agenda) {
+    mes_t *aux = agenda->ptr_mes_atual;
 
+    if (aux->prox->mes != NULL) {
+        aux = aux->prox;
+        agenda->mes_atual++;
+        return agenda->mes_atual;
+    }
+
+    mes_t *novoMes = malloc(sizeof(mes_t));
+
+    if (novoMes == NULL)
+        return 0;
+
+    novoMes->prox = aux->prox;
+    novoMes->ant = aux;
+    
+    aux->prox->ant = novoMes;
+    aux->prox = novoMes;
+
+    aux = aux->prox;
+    aux->mes++;
+    aux->mes = aux->ant->mes + 1;
+
+    return aux->mes;
 }
 
 /* Analogo ao prox_mes_agenda porem decrementa mes_atual. */ 
 int ant_mes_agenda(agenda_t* agenda) {
+    mes_t *aux = agenda->ptr_mes_atual;
 
+    if (aux->ant != NULL) {
+        aux = aux->ant;
+        agenda->mes_atual--;
+        return agenda->mes_atual;
+    }
+
+    mes_t *novoMes = malloc(sizeof(mes_t));
+
+    if (novoMes == NULL)
+        return 0;
+
+    novoMes->prox = aux;
+    novoMes->ant = aux->ant;
+    
+    aux->ant->prox = novoMes;
+    aux->ant = novoMes;
+
+    aux = aux->ant;
+    aux->mes--;
+    aux->mes = aux->prox->mes - 1;
+
+    return aux->mes;
 }
 
 /* Retorna um ponteiro para a lista ligada de compromissos de um dia do mes
    ou NULL se vazia. A lista de compromissos retornada pode ser percorrida
    usando-se a funcao prox_compr. */ 
 compromisso_t* compr_agenda(agenda_t* agenda, int dia) {
+    dia_t *procuraDia = agenda->ptr_mes_atual->dias;
 
+    while (procuraDia->dia < dia) 
+        procuraDia = procuraDia->prox;
+
+    if (procuraDia->dia == dia)
+        return procuraDia->comprs;
+
+    return NULL;
 }
 
 /* Retorna o primeiro compromisso da lista de compromissos compr e avanca
@@ -163,21 +217,28 @@ compromisso_t* prox_compr(compromisso_t* compr) {
 horario_compromisso_t hc_compr(compromisso_t* compr) {
     horario_compromisso_t horario;
 
-    horario.ini_h = compr->inicio;
+    horario.ini_h = (compr->inicio / 60);
+    horario.ini_m = (compr->inicio % 60);
+
+    horario.fim_h = (compr->fim / 60);
+    horario.fim_m = (compr->fim % 60);
+
+    return horario;
 }
 
 int id_compr(compromisso_t* compr) {
-
+    return compr->id;
 }
 
 char* descricao_compr(compromisso_t* compr) {
-
+    return compr->descricao;
 }
 
 /*  Essa funcao nao eh extritamente necessaria, o objetivo é
     que o programa principal apresente os dados. 
     Porem pode ser util para voces durante o desenvolvimento 
-*/ 
+
 void imprime_agenda_mes(agenda_t* agenda) {
 
 }
+*/
