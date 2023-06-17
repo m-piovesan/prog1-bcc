@@ -69,9 +69,43 @@ void destroi_agenda(agenda_t* agenda) {
 
     A lista de compromisso eh ordenada pelo horario de inicio. Eh necessario
     testar a interseccao entre horarios de inicio e de fim no compromisso novo
-    considerando o  compromisso anterior e o proximo, caso existam. */
-int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
+    considerando o compromisso anterior e o proximo, caso existam. */
 
+    // transformar o máximo possível de funçõezinhas em novas funções auxiliares
+
+int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
+    dia_t *aux = agenda->ptr_mes_atual->dias;
+
+
+    /* CASO TENHA MAIS DE UM COMPROMISSO NO DIA */
+    while ((aux->prox != NULL) && (dia > aux->prox->dia))
+        aux = aux->prox;
+
+    /* JÁ EXISTE ALGUM COMPROMISSO NESSE DIA */
+    if (aux->prox->dia == dia) {
+        
+        // testar intersecção de horários...
+
+        /* NOVO COMPR TERMINA ANTES DO PRIMEIRO DA LISTA COMEÇAR */
+        if (compr->fim < aux->comprs->inicio) {
+            compr->prox = aux->comprs;
+            aux->comprs = compr;
+            return 1;
+        }
+
+        /* CASO TENHA MAIS DE UM */
+        while (compr->)
+        // while (aux->prox != NULL && novo->elemento->chave > aux->prox->elemento->chave) {
+        //     aux = aux->prox;
+        // }
+
+        
+
+
+    }
+
+    // novo->prox = aux->prox;
+    // aux->prox = novo;
 }
 
 /* Desmarca o compromisso compr da agenda:
@@ -242,3 +276,6 @@ void imprime_agenda_mes(agenda_t* agenda) {
 
 }
 */
+
+// CRIAR FUNCAO LE COMPROMISSO
+// CRIAR FUNCAO TESTA VALIDADE COMPROMISSO
