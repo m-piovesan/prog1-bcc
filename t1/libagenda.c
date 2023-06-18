@@ -76,31 +76,102 @@ void destroi_agenda(agenda_t* agenda) {
 int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
     dia_t *aux = agenda->ptr_mes_atual->dias;
 
+    compromisso_t *novoCompr = malloc(sizeof(compromisso_t));
+    
+    if (novoCompr == NULL)
+        return 0;
 
-    /* CASO TENHA MAIS DE UM COMPROMISSO NO DIA */
-    while ((aux->prox != NULL) && (dia > aux->prox->dia))
+    novoCompr = compr;
+
+    /* CASO TENHA MENOS DE 2 DIAS MALLOCADOS NO MÊS */
+    if ((aux == NULL) || (aux->prox == NULL)) {
+        dia_t *novoDia = malloc(sizeof(dia_t));
+
+        if (novoDia == NULL)
+            return 0;
+
+        /* "CRIAR" A CABEÇA DA LISTA */
+        if (aux == NULL) {
+            aux = novoDia;
+            aux->dia = dia;
+            aux->prox = NULL;
+            aux->comprs = novoCompr;
+        
+            return 1;
+        }
+
+        /* MUDAR QUEM É A CABEÇA DA LISTA */
+        if (dia < aux->dia) {
+            novoDia->prox = aux;
+            aux = novoDia;
+            aux->dia = dia;
+            aux->comprs = novoCompr;
+
+            return 1;
+        }
+            
+        /* CABEÇA SEJA ÚNICO DIA DO MÊS */
+        if (dia == aux->dia) {
+            if (novoCompr->fim < aux->comprs->inicio) {
+                novoCompr->prox = aux->comprs;
+                aux->comprs = novoCompr;
+                return 1;
+            }
+
+            while ((novoCompr->inicio < aux->comprs->fim) && (aux->comprs->prox != NULL))
+                aux = aux->comprs->prox;
+
+            if (aux->comprs->prox = NULL) {
+                aux->comprs->prox = novoCompr;
+                return 1;
+            }
+
+            if (novoCompr->fim < aux->comprs->prox->inicio) {
+                novoCompr->prox = aux->comprs->prox;
+                aux->comprs->prox = novoCompr;
+                return 1;
+            }
+        
+            return -1;
+        }
+
+        aux->prox = novoDia;
+        novoDia->prox = NULL;
+        novoDia->comprs = novoCompr;
+
+        return 1;
+    }   
+
+    /* CASO TENHA MAIS DE UM DIA MALLOCADO NESSE MÊS */
+    while ((aux->prox != NULL) && (dia < aux->prox->dia))
         aux = aux->prox;
 
     /* JÁ EXISTE ALGUM COMPROMISSO NESSE DIA */
     if (aux->prox->dia == dia) {
-        
-        // testar intersecção de horários...
 
         /* NOVO COMPR TERMINA ANTES DO PRIMEIRO DA LISTA COMEÇAR */
-        if (compr->fim < aux->comprs->inicio) {
-            compr->prox = aux->comprs;
-            aux->comprs = compr;
+        if (novoCompr->fim < aux->comprs->inicio) {
+            novoCompr->prox = aux->comprs;
+            aux->comprs = novoCompr;
             return 1;
         }
 
         /* CASO TENHA MAIS DE UM */
-        while (compr->)
-        // while (aux->prox != NULL && novo->elemento->chave > aux->prox->elemento->chave) {
-        //     aux = aux->prox;
-        // }
+        while ((novoCompr->inicio < aux->comprs->fim) && (aux->comprs->prox != NULL))
+            aux = aux->comprs->prox;
 
+        if (aux->comprs->prox = NULL) {
+            aux->comprs->prox = novoCompr;
+            return 1;
+        }
+
+        if (novoCompr->fim < aux->comprs->prox->inicio) {
+            novoCompr->prox = aux->comprs->prox;
+            aux->comprs->prox = novoCompr;
+            return 1;
+        }
         
-
+        return -1;
 
     }
 
@@ -278,4 +349,31 @@ void imprime_agenda_mes(agenda_t* agenda) {
 */
 
 // CRIAR FUNCAO LE COMPROMISSO
-// CRIAR FUNCAO TESTA VALIDADE COMPROMISSO
+
+int testa_intersec(dia_t *listaDias, compromisso_t *novoCompr) {
+    /* NOVO TERMINA ANTES DO PRIMEIRO COMEÇAR */
+    if (novoCompr->fim < listaDias->comprs->inicio) {
+        novoCompr->prox = listaDias->comprs;
+        listaDias->comprs = novoCompr;
+        return 1;
+    }
+
+    while ((novoCompr->inicio < listaDias->comprs->fim) && (listaDias->comprs->prox != NULL))
+        listaDias = listaDias->comprs->prox;
+
+    /* NOVO É O ÚLTIMO COMPROMISSO DO DIA*/
+    if (listaDias->comprs->prox = NULL) {
+        listaDias->comprs->prox = novoCompr;
+        return 1;
+    }
+
+    /* ENCAIXA NOVO NA LISTA DE COMPROMISSOS */
+    if (novoCompr->fim < listaDias->comprs->prox->inicio) {
+        novoCompr->prox = listaDias->comprs->prox;
+        listaDias->comprs->prox = novoCompr;
+        return 1;
+    }
+        
+    /* CONFLITO DE HORÁRIO */
+    return -1;    
+}
