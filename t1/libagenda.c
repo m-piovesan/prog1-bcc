@@ -76,14 +76,10 @@ void destroi_agenda(agenda_t* agenda) {
 int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
     dia_t *aux = agenda->ptr_mes_atual->dias;
 
-    compromisso_t *novoCompr = malloc(sizeof(compromisso_t));
-    
-    if (novoCompr == NULL)
-        return 0;
+// substituir por cria compromisso né burrão tongão
+    compromisso_t *novoCompr = copia_compromisso(compr);
 
-    novoCompr = compr;
-
-    /* CASO TENHA MENOS DE 2 DIAS MALLOCADOS NO MÊS */
+/* CASO TENHA MENOS DE 2 DIAS MALLOCADOS NO MÊS */
     if ((aux == NULL) || (aux->prox == NULL)) {
         dia_t *novoDia = malloc(sizeof(dia_t));
 
@@ -111,29 +107,8 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
         }
             
         /* CABEÇA SEJA ÚNICO DIA DO MÊS */
-        if (dia == aux->dia) {
-            if (novoCompr->fim < aux->comprs->inicio) {
-                novoCompr->prox = aux->comprs;
-                aux->comprs = novoCompr;
-                return 1;
-            }
-
-            while ((novoCompr->inicio < aux->comprs->fim) && (aux->comprs->prox != NULL))
-                aux = aux->comprs->prox;
-
-            if (aux->comprs->prox = NULL) {
-                aux->comprs->prox = novoCompr;
-                return 1;
-            }
-
-            if (novoCompr->fim < aux->comprs->prox->inicio) {
-                novoCompr->prox = aux->comprs->prox;
-                aux->comprs->prox = novoCompr;
-                return 1;
-            }
-        
-            return -1;
-        }
+        if (dia == aux->dia)
+            return testa_intersec(aux, novoCompr);
 
         aux->prox = novoDia;
         novoDia->prox = NULL;
@@ -142,41 +117,34 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
         return 1;
     }   
 
-    /* CASO TENHA MAIS DE UM DIA MALLOCADO NESSE MÊS */
+/* CASO TENHA MAIS DE UM DIA MALLOCADO NESSE MÊS */
     while ((aux->prox != NULL) && (dia < aux->prox->dia))
         aux = aux->prox;
 
-    /* JÁ EXISTE ALGUM COMPROMISSO NESSE DIA */
-    if (aux->prox->dia == dia) {
+    /* DIA DO COMPROMISSO JÁ MALLOCADO */
+    if (aux->prox->dia == dia) 
+        return testa_intersec(aux->prox, novoCompr);
 
-        /* NOVO COMPR TERMINA ANTES DO PRIMEIRO DA LISTA COMEÇAR */
-        if (novoCompr->fim < aux->comprs->inicio) {
-            novoCompr->prox = aux->comprs;
-            aux->comprs = novoCompr;
-            return 1;
-        }
+    /* O DIA DO NOVO COMPROMISSO AINDA NÃO FOI MALLOCADO */
+    dia_t *novoDia = malloc(sizeof(dia_t));
 
-        /* CASO TENHA MAIS DE UM */
-        while ((novoCompr->inicio < aux->comprs->fim) && (aux->comprs->prox != NULL))
-            aux = aux->comprs->prox;
+    if (novoDia == NULL)
+        return 0;
 
-        if (aux->comprs->prox = NULL) {
-            aux->comprs->prox = novoCompr;
-            return 1;
-        }
+    novoDia->dia = dia;
+    novoDia->comprs = novoCompr;
 
-        if (novoCompr->fim < aux->comprs->prox->inicio) {
-            novoCompr->prox = aux->comprs->prox;
-            aux->comprs->prox = novoCompr;
-            return 1;
-        }
-        
-        return -1;
-
+    /* CASO O NOVO DIA SEJA O ÚLTIMO DA LISTA */
+    if (aux->prox == NULL) {
+        novoDia->prox = NULL;
+        aux->prox = novoDia;
+        return 1;
     }
 
-    // novo->prox = aux->prox;
-    // aux->prox = novo;
+    /* CASO ESTEJA NO DECORRER DA LISTA */
+    novoDia->prox = aux->prox;
+    aux->prox = novoDia;
+    return 1;
 }
 
 /* Desmarca o compromisso compr da agenda:
@@ -292,7 +260,7 @@ int ant_mes_agenda(agenda_t* agenda) {
 
 /* Retorna um ponteiro para a lista ligada de compromissos de um dia do mes
    ou NULL se vazia. A lista de compromissos retornada pode ser percorrida
-   usando-se a funcao prox_compr. */ 
+   usando-se a funcao   pr. */ 
 compromisso_t* compr_agenda(agenda_t* agenda, int dia) {
     dia_t *procuraDia = agenda->ptr_mes_atual->dias;
 
@@ -305,16 +273,12 @@ compromisso_t* compr_agenda(agenda_t* agenda, int dia) {
     return NULL;
 }
 
-/* Retorna o primeiro compromisso da lista de compromissos compr e avanca
- * para o prox. Retorna NULL se a lista esta vazia, ou seja, sem compromissos.*/
+/* Retorna o próximo compromisso da lista de compromissos compr */
 compromisso_t* prox_compr(compromisso_t* compr) {
     if (compr == NULL)
         return NULL;
 
-    compromisso_t *aux = compr;
-    compr = compr->prox;
-
-    return aux;
+    return compr->prox;
 }
 
 /* As funcoes abaixo sao usadas para acessar os membros da struct compromisso
@@ -376,4 +340,19 @@ int testa_intersec(dia_t *listaDias, compromisso_t *novoCompr) {
         
     /* CONFLITO DE HORÁRIO */
     return -1;    
+}
+
+compromisso_t* copia_compromisso(compromisso_t* compr) {
+    compromisso_t* novoCompr = malloc(sizeof(compromisso_t));
+    
+    if (novoCompr == NULL)
+        return NULL;
+
+    novoCompr->id = compr->id;
+    strcpy(novoCompr->descricao, compr->descricao);
+    novoCompr->inicio = compr->inicio;
+    novoCompr->fim = compr->fim;
+    novoCompr->prox = NULL;
+
+    return novoCompr;
 }
