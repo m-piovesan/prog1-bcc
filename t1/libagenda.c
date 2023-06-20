@@ -35,9 +35,8 @@ agenda_t* cria_agenda() {
 compromisso_t* cria_compromisso(horario_compromisso_t hc, int id, char* descricao) {
     compromisso_t* novoCompr = malloc(sizeof(compromisso_t));
     
-    if (novoCompr == NULL) {
+    if (novoCompr == NULL)
         return NULL;
-    }
 
     novoCompr->descricao = malloc(strlen(descricao) + 1); /* +1 para o caractere nulo de terminação */
     
@@ -70,9 +69,6 @@ void destroi_agenda(agenda_t* agenda) {
     A lista de compromisso eh ordenada pelo horario de inicio. Eh necessario
     testar a interseccao entre horarios de inicio e de fim no compromisso novo
     considerando o compromisso anterior e o proximo, caso existam. */
-
-    // transformar o máximo possível de funçõezinhas em novas funções auxiliares
-
 int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
     dia_t *aux = agenda->ptr_mes_atual->dias;
 
@@ -179,7 +175,6 @@ int desmarca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr)
 
 /* Imprime a agenda do mes atual (mes atual) */
 void imprime_agenda_mes(agenda_t* agenda) {   
-
     dia_t *auxDias = agenda->ptr_mes_atual->dias;
     compromisso_t *auxCompr = auxDias->comprs;
 
@@ -220,8 +215,17 @@ void prim_mes_agenda(agenda_t* agenda) {
  * O ponteiro ptr_mes_atual deve ser atualizado para apontar para o novo mes_atual.
  * Se o novo mes_atual nao existir deve ser alocado. A funcao retorna o inteiro 
  * mes_atual em caso de sucesso ou 0 caso contrario.  */ 
+
+// CORRIGIR ESSA FUNÇÃO E A ANT_MES
+
 int prox_mes_agenda(agenda_t* agenda) {
     mes_t *aux = agenda->ptr_mes_atual;
+
+    if ((agenda->ptr_mes_atual->prox->mes) != ((agenda->ptr_mes_atual->mes) + 1)) {
+        // QUER DIZER QUE O PRÓXIMO MÊS DA LISTA CIRCULAR NÃO É O DIRETO SUCESSOR
+        // TEM QUE CRIAR DAÍ E PA
+    }
+
 
     if (aux->prox != NULL) {
         aux = aux->prox;
@@ -236,11 +240,10 @@ int prox_mes_agenda(agenda_t* agenda) {
 
     novoMes->prox = aux->prox;
     novoMes->ant = aux;
-    
-    aux->prox->ant = novoMes;
-    aux->prox = novoMes;
 
+    aux->prox = novoMes;
     aux = aux->prox;
+
     aux->mes++;
     aux->mes = aux->ant->mes + 1;
 
@@ -277,7 +280,7 @@ int ant_mes_agenda(agenda_t* agenda) {
 
 /* Retorna um ponteiro para a lista ligada de compromissos de um dia do mes
    ou NULL se vazia. A lista de compromissos retornada pode ser percorrida
-   usando-se a funcao   pr. */ 
+   usando-se a funcao prox_compr. */ 
 compromisso_t* compr_agenda(agenda_t* agenda, int dia) {
     dia_t *procuraDia = agenda->ptr_mes_atual->dias;
 
@@ -332,8 +335,6 @@ void imprime_agenda_mes(agenda_t* agenda) {
 }
 */
 
-// CRIAR FUNCAO LE COMPROMISSO
-
 int testa_intersec(dia_t *listaDias, compromisso_t *novoCompr) {
     /* NOVO TERMINA ANTES DO PRIMEIRO COMEÇAR */
     if (novoCompr->fim < listaDias->comprs->inicio) {
@@ -362,51 +363,17 @@ int testa_intersec(dia_t *listaDias, compromisso_t *novoCompr) {
     return -1;    
 }
 
-// compromisso_t* copia_compromisso(compromisso_t* compr) {
-//     compromisso_t* novoCompr = malloc(sizeof(compromisso_t));
-    
-//     if (novoCompr == NULL)
-//         return NULL;
-
-//     novoCompr->id = compr->id;
-//     strcpy(novoCompr->descricao, compr->descricao);
-//     novoCompr->inicio = compr->inicio;
-//     novoCompr->fim = compr->fim;
-//     novoCompr->prox = NULL;
-
-//     return novoCompr;
-// }
-
-compromisso_t le_compromisso (void) {
-    compromisso_t novoCompr;
-    horario_compromisso_t novoHc;
-
-    printf("Digite o horário de início do compromisso (hh:mm): ");
-    scanf("%d:%d", &novoHc.ini_h, &novoHc.ini_m);
-
-    printf("Digite o horário de término do compromisso (hh:mm): ");
-    scanf("%d:%d", &novoHc.fim_h, &novoHc.fim_m);
-
-    printf("Digite o ID do compromisso: ");
-    scanf("%d", &novoCompr.id);
-
-    printf("Digite a descrição do compromisso: ");
-    scanf("%s", novoCompr.descricao);
-
-    novoCompr.inicio = (novoHc.ini_h * 60) + novoHc.ini_m;
-    novoCompr.fim = (novoHc.fim_h * 60) + novoHc.fim_m;
-    novoCompr.prox = NULL;
-
-    return novoCompr;
-}
-
 int procura_compr_remove(compromisso_t *compr, dia_t *listaDias) {
 compromisso_t *listaCompr = listaDias->comprs;
 
 /* COMPROMISSO É O PRIMEIRO DA LISTA */
     if (compr->id == listaCompr->id) {
+        free(listaCompr->descricao);
+        listaCompr->descricao = NULL;
+
         free(listaCompr);
         listaCompr = NULL;
+
         return 1;
     }
 
@@ -415,8 +382,12 @@ compromisso_t *listaCompr = listaDias->comprs;
             
     /* COMPROMISSO É O ÚLTIMO COMPROMISSO DA LISTA */
     if (listaCompr->prox == NULL) {
+        free(listaCompr->descricao);
+        listaCompr->descricao = NULL;
+        
         free(listaCompr);
-        listaDias = NULL;
+        listaCompr = NULL;
+
         return 1;
     }
 
@@ -425,9 +396,13 @@ compromisso_t *listaCompr = listaDias->comprs;
         compromisso_t *remover = listaCompr->prox;
                 
         listaCompr->prox = listaCompr->prox->prox;
-                
+
+        free(remover->descricao);
+        remover->descricao = NULL;
+
         free(remover);
         remover = NULL;
+
         return 1;
     }
 
