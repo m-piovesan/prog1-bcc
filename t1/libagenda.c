@@ -39,14 +39,14 @@ compromisso_t* cria_compromisso(horario_compromisso_t hc, int id, char* descrica
         return NULL;
     }
 
-    novoCompr->descricao = malloc(strlen(descricao) + 1); // +1 para o caractere nulo de terminação
+    novoCompr->descricao = malloc(strlen(descricao) + 1); /* +1 para o caractere nulo de terminação */
     
     if (novoCompr->descricao == NULL) {
         free(novoCompr); 
         return NULL; 
     }
 
-    strcpy(novoCompr->descricao, descricao); // Copiar a string de descrição para o novo local alocado
+    strcpy(novoCompr->descricao, descricao); /* Copiar a string de descrição */
     
     novoCompr->id = id;
     novoCompr->inicio = hc.ini_h;
@@ -58,7 +58,7 @@ compromisso_t* cria_compromisso(horario_compromisso_t hc, int id, char* descrica
 
 /* Libera toda memoria associado a agenda. */
 void destroi_agenda(agenda_t* agenda) {
-
+    
 }
 
 /* Marca um compromisso na agenda:
@@ -76,9 +76,6 @@ void destroi_agenda(agenda_t* agenda) {
 int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
     dia_t *aux = agenda->ptr_mes_atual->dias;
 
-// substituir por cria compromisso né burrão tongão
-    compromisso_t *novoCompr = copia_compromisso(compr);
-
 /* CASO TENHA MENOS DE 2 DIAS MALLOCADOS NO MÊS */
     if ((aux == NULL) || (aux->prox == NULL)) {
         dia_t *novoDia = malloc(sizeof(dia_t));
@@ -91,7 +88,7 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
             aux = novoDia;
             aux->dia = dia;
             aux->prox = NULL;
-            aux->comprs = novoCompr;
+            aux->comprs = compr;
         
             return 1;
         }
@@ -101,18 +98,18 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
             novoDia->prox = aux;
             aux = novoDia;
             aux->dia = dia;
-            aux->comprs = novoCompr;
+            aux->comprs = compr;
 
             return 1;
         }
             
         /* CABEÇA SEJA ÚNICO DIA DO MÊS */
         if (dia == aux->dia)
-            return testa_intersec(aux, novoCompr);
+            return testa_intersec(aux, compr);
 
         aux->prox = novoDia;
         novoDia->prox = NULL;
-        novoDia->comprs = novoCompr;
+        novoDia->comprs = compr;
 
         return 1;
     }   
@@ -123,7 +120,7 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
 
     /* DIA DO COMPROMISSO JÁ MALLOCADO */
     if (aux->prox->dia == dia) 
-        return testa_intersec(aux->prox, novoCompr);
+        return testa_intersec(aux->prox, compr);
 
     /* O DIA DO NOVO COMPROMISSO AINDA NÃO FOI MALLOCADO */
     dia_t *novoDia = malloc(sizeof(dia_t));
@@ -132,7 +129,7 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
         return 0;
 
     novoDia->dia = dia;
-    novoDia->comprs = novoCompr;
+    novoDia->comprs = compr;
 
     /* CASO O NOVO DIA SEJA O ÚLTIMO DA LISTA */
     if (aux->prox == NULL) {
@@ -153,10 +150,31 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
     1: em caso de sucesso
     0: caso nao tenha encontrado o compr */
 int desmarca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
-    /*  tem que achar o compromisso indicado por compr na agenda,
-        daí colocar pro (anterior dele)->prox receber compr->prox
-        depois dar um free no compr e apontar ele pra NULL?
-    */  
+    dia_t *aux = agenda->ptr_mes_atual->dias;
+
+    /* MÊS VAZIO */
+    if (aux == NULL)
+        return 0;
+
+    /* MÊS COM UM DIA MALLOCADO */
+    if (aux->prox == NULL) {
+        if (aux->dia == dia) 
+            return procura_compr_remove(compr, aux->comprs);
+
+        /* DIA NÃO CORRESPONDE AO DIA DO COMPROMISSO */
+        return 0;
+    }
+
+    /* MÊS COM MAIS DE 1 DIA MALLOCADO */
+    while ((aux->prox != NULL) && (dia < aux->prox->dia))
+        aux = aux->prox;    
+
+    /* DIA DO COMPROMISSO ESTÁ NA LISTA */
+    if (aux->prox->dia == dia)
+        return procura_compr_remove(compr, aux->comprs);
+
+    /* DIA NÃO ESTÁ NA LISTA */
+    return 0;
 }
 
 /* Imprime a agenda do mes atual (mes atual) */
@@ -188,8 +206,7 @@ int mes_atual_agenda(agenda_t *agenda) {
     return agenda->mes_atual;
 }
 
-/* Ajusta o mes_atual para 1 e aponta prt_mes_atual para o mes 1 na Lista de 
- * meses  */
+/* Ajusta o mes_atual para 1 e aponta prt_mes_atual para o mes 1 na Lista de meses  */
 void prim_mes_agenda(agenda_t* agenda) {
     agenda->mes_atual = 1;
 
@@ -206,7 +223,7 @@ void prim_mes_agenda(agenda_t* agenda) {
 int prox_mes_agenda(agenda_t* agenda) {
     mes_t *aux = agenda->ptr_mes_atual;
 
-    if (aux->prox->mes != NULL) {
+    if (aux->prox != NULL) {
         aux = aux->prox;
         agenda->mes_atual++;
         return agenda->mes_atual;
@@ -263,6 +280,9 @@ int ant_mes_agenda(agenda_t* agenda) {
    usando-se a funcao   pr. */ 
 compromisso_t* compr_agenda(agenda_t* agenda, int dia) {
     dia_t *procuraDia = agenda->ptr_mes_atual->dias;
+
+    if (procuraDia == NULL)
+        return NULL;
 
     while (procuraDia->dia < dia) 
         procuraDia = procuraDia->prox;
@@ -326,7 +346,7 @@ int testa_intersec(dia_t *listaDias, compromisso_t *novoCompr) {
         listaDias = listaDias->comprs->prox;
 
     /* NOVO É O ÚLTIMO COMPROMISSO DO DIA*/
-    if (listaDias->comprs->prox = NULL) {
+    if (listaDias->comprs->prox == NULL) {
         listaDias->comprs->prox = novoCompr;
         return 1;
     }
@@ -342,17 +362,75 @@ int testa_intersec(dia_t *listaDias, compromisso_t *novoCompr) {
     return -1;    
 }
 
-compromisso_t* copia_compromisso(compromisso_t* compr) {
-    compromisso_t* novoCompr = malloc(sizeof(compromisso_t));
+// compromisso_t* copia_compromisso(compromisso_t* compr) {
+//     compromisso_t* novoCompr = malloc(sizeof(compromisso_t));
     
-    if (novoCompr == NULL)
-        return NULL;
+//     if (novoCompr == NULL)
+//         return NULL;
 
-    novoCompr->id = compr->id;
-    strcpy(novoCompr->descricao, compr->descricao);
-    novoCompr->inicio = compr->inicio;
-    novoCompr->fim = compr->fim;
-    novoCompr->prox = NULL;
+//     novoCompr->id = compr->id;
+//     strcpy(novoCompr->descricao, compr->descricao);
+//     novoCompr->inicio = compr->inicio;
+//     novoCompr->fim = compr->fim;
+//     novoCompr->prox = NULL;
+
+//     return novoCompr;
+// }
+
+compromisso_t le_compromisso (void) {
+    compromisso_t novoCompr;
+    horario_compromisso_t novoHc;
+
+    printf("Digite o horário de início do compromisso (hh:mm): ");
+    scanf("%d:%d", &novoHc.ini_h, &novoHc.ini_m);
+
+    printf("Digite o horário de término do compromisso (hh:mm): ");
+    scanf("%d:%d", &novoHc.fim_h, &novoHc.fim_m);
+
+    printf("Digite o ID do compromisso: ");
+    scanf("%d", &novoCompr.id);
+
+    printf("Digite a descrição do compromisso: ");
+    scanf("%s", novoCompr.descricao);
+
+    novoCompr.inicio = (novoHc.ini_h * 60) + novoHc.ini_m;
+    novoCompr.fim = (novoHc.fim_h * 60) + novoHc.fim_m;
+    novoCompr.prox = NULL;
 
     return novoCompr;
+}
+
+int procura_compr_remove(compromisso_t *compr, dia_t *listaDias) {
+compromisso_t *listaCompr = listaDias->comprs;
+
+/* COMPROMISSO É O PRIMEIRO DA LISTA */
+    if (compr->id == listaCompr->id) {
+        free(listaCompr);
+        listaCompr = NULL;
+        return 1;
+    }
+
+    while ((listaCompr->prox != NULL) && (compr->id != listaCompr->prox->id)) 
+        listaCompr = listaCompr->prox;
+            
+    /* COMPROMISSO É O ÚLTIMO COMPROMISSO DA LISTA */
+    if (listaCompr->prox == NULL) {
+        free(listaCompr);
+        listaDias = NULL;
+        return 1;
+    }
+
+    /* COMPROMISSO NO DECORRER DA LISTA */
+    if (compr->id == listaCompr->prox->id) {
+        compromisso_t *remover = listaCompr->prox;
+                
+        listaCompr->prox = listaCompr->prox->prox;
+                
+        free(remover);
+        remover = NULL;
+        return 1;
+    }
+
+    /* COMPROMISSO NÃO ESTÁ NA LISTA */
+    return 0;
 }
