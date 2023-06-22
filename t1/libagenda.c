@@ -23,6 +23,9 @@ agenda_t* cria_agenda() {
     }
 
     novaAg->ptr_mes_atual->mes = 1;
+    novaAg->ptr_mes_atual->dias = NULL;
+    novaAg->ptr_mes_atual->ant = NULL;
+    novaAg->ptr_mes_atual->prox = NULL;
 
     return novaAg;
 }
@@ -49,8 +52,8 @@ compromisso_t* cria_compromisso(horario_compromisso_t hc, int id, char* descrica
     strcpy(novoCompr->descricao, descricao); /* Copiar a string de descrição */
     
     novoCompr->id = id;
-    novoCompr->inicio = hc.ini_h;
-    novoCompr->fim = hc.fim_h;
+    novoCompr->inicio = (hc.ini_h * 60) + hc.ini_m;
+    novoCompr->fim = (hc.fim_h * 60) + hc.fim_m;
     novoCompr->prox = NULL;
 
     return novoCompr;
@@ -197,12 +200,18 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
         novoDia->comprs = novoCompr;
 
         aux = novoDia;
-        printf("oi\n");
+
+        printf("mês vazio\n");
         return 1;
     }
 
 /* 1 DIA MALLOCADO NO MÊS */
     if (aux->prox == NULL) {
+        /* COMPROMISSO MARCADO PRO ÚNICO DIA DO MÊS */
+        if (dia == aux->dia)
+            printf("\núnico dia do mês");
+            return testa_intersec(aux, novoCompr);
+
         dia_t *novoDia = malloc(sizeof(dia_t));
 
         if (novoDia == NULL)
@@ -215,17 +224,15 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
             aux->dia = dia;
             aux->comprs = novoCompr;
 
+            printf("\nmudar cabeça");
             return 1;
         }
-            
-        /* COMPROMISSO MARCADO PRO ÚNICO DIA DO MÊS */
-        if (dia == aux->dia)
-            return testa_intersec(aux, novoCompr);
 
         /* COMPROMISSO MARCADO PRA ALGUM DIA DEPOIS DO ÚNICO MALLOCADO */
         novoDia->prox = NULL;
         novoDia->comprs = novoCompr;
         aux->prox = novoDia;
+        printf("\ndepois");
 
         return 1;
     }   
