@@ -11,10 +11,18 @@ int main() {
     }
 
     horario_compromisso_t horario = {8, 10, 9, 30};
-    horario_compromisso_t horario2 = {10, 12, 11, 30};
+    horario_compromisso_t horario2 = {16, 12, 19, 30};
+    horario_compromisso_t horario3 = {13, 15, 14, 30};
+    horario_compromisso_t horario4 = {10, 15, 11, 30};
+    horario_compromisso_t horario5 = {8, 10, 9, 30};
+    horario_compromisso_t horario6 = {16, 12, 19, 30};
 
-    compromisso_t* compr1 = cria_compromisso(horario, 1, "Reuniao");
-    compromisso_t* compr2 = cria_compromisso(horario2, 2, "Apresentacao");
+    compromisso_t* compr1 = cria_compromisso(horario, 10, "Reuniao");
+    compromisso_t* compr2 = cria_compromisso(horario2, 20, "Apresentacao");
+    compromisso_t* compr3 = cria_compromisso(horario3, 30, "Treinamento");
+    compromisso_t* compr4 = cria_compromisso(horario4, 40, "Palestra");
+    compromisso_t* compr5 = cria_compromisso(horario5, 50, "Jogo");
+    compromisso_t* compr6 = cria_compromisso(horario6, 60, "Show");
 
     if (compr1 == NULL || compr2 == NULL) {
         printf("Erro ao criar compromisso.\n");
@@ -23,7 +31,14 @@ int main() {
     }
 
     marca_compromisso_agenda(agenda, 1, compr1);
-    marca_compromisso_agenda(agenda, 2, compr2);
+    marca_compromisso_agenda(agenda, 0, compr2);
+    marca_compromisso_agenda(agenda, 1, compr3);
+    marca_compromisso_agenda(agenda, 2, compr4);
+    marca_compromisso_agenda(agenda, 2, compr5);
+    marca_compromisso_agenda(agenda, 6, compr6);
+
+    printf("Agenda do mês atual:\n");
+    imprime_agenda_mes(agenda);
 
     // if (marca_compromisso_agenda(agenda, 1, compr1) != 1) {
     //     printf("Erro ao marcar compromisso.\n");
@@ -31,8 +46,7 @@ int main() {
     //     return 1;
     // }
 
-    // printf("Agenda do mês atual:\n");
-    // imprime_agenda_mes(agenda);
+    
 
     // int currentMonth = mes_atual_agenda(agenda);
     // printf("Mês atual: %d\n", currentMonth);

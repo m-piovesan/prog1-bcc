@@ -199,53 +199,70 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
         novoDia->prox = NULL;
         novoDia->comprs = novoCompr;
 
-        aux = novoDia;
+        agenda->ptr_mes_atual->dias = novoDia;
 
         printf("mês vazio\n");
         return 1;
     }
 
-/* 1 DIA MALLOCADO NO MÊS */
-    if (aux->prox == NULL) {
-        /* COMPROMISSO MARCADO PRO ÚNICO DIA DO MÊS */
-        if (dia == aux->dia)
-            printf("\núnico dia do mês");
-            return testa_intersec(aux, novoCompr);
+/* COMPROMISSO MARCADO PRO PRIMEIRO DIA DO MÊS */
+    if (dia == aux->dia) {
+        printf("compr primeiro dia do mês\n");
+        return testa_intersec(aux, novoCompr);
+    }
 
+/* MUDAR QUEM É A CABEÇA DA LISTA (novo dia menor que dia mallocado)*/
+    if (dia < aux->dia) {
         dia_t *novoDia = malloc(sizeof(dia_t));
 
         if (novoDia == NULL)
             return 0;
-
-        /* MUDAR QUEM É A CABEÇA DA LISTA (novo dia menor que dia mallocado)*/
-        if (dia < aux->dia) {
-            novoDia->prox = aux;
-            aux = novoDia;
-            aux->dia = dia;
-            aux->comprs = novoCompr;
-
-            printf("\nmudar cabeça");
-            return 1;
-        }
-
-        /* COMPROMISSO MARCADO PRA ALGUM DIA DEPOIS DO ÚNICO MALLOCADO */
-        novoDia->prox = NULL;
+        
+        novoDia->prox = agenda->ptr_mes_atual->dias;
+        novoDia->dia = dia;
         novoDia->comprs = novoCompr;
-        aux->prox = novoDia;
-        printf("\ndepois");
-
+        agenda->ptr_mes_atual->dias = novoDia;
+        printf("mudar cabeça\n");
         return 1;
-    }   
-
+    }
+       
 /* CASO TENHA MAIS DE UM DIA MALLOCADO NESSE MÊS */
     while ((aux->prox != NULL) && (dia < aux->prox->dia))
         aux = aux->prox;
 
     /* DIA DO COMPROMISSO JÁ MALLOCADO */
-    if (aux->prox->dia == dia) 
+    if (aux->prox->dia == dia) {
+        printf("dia já mallocado\n"); 
         return testa_intersec(aux->prox, novoCompr);
+    }
 
     /* O DIA DO NOVO COMPROMISSO AINDA NÃO FOI MALLOCADO */
+    // dia_t *novoDia = malloc(sizeof(dia_t));
+
+    // if (novoDia == NULL)
+    //     return 0;
+
+    // novoDia->dia = dia;
+    // novoDia->comprs = novoCompr;
+    
+    /* CASO O NOVO DIA SEJA O ÚLTIMO DA LISTA */
+    if (aux->prox == NULL) {
+        dia_t *novoDia = malloc(sizeof(dia_t));
+
+        if (novoDia == NULL)
+            return 0;
+
+        novoDia->dia = dia;
+        novoDia->prox = NULL;
+        novoDia->comprs = novoCompr;
+
+        agenda->ptr_mes_atual->dias->prox = novoDia;
+        printf("depois\n");
+
+        return 1;
+    }
+
+    /* CASO ESTEJA NO DECORRER DA LISTA */
     dia_t *novoDia = malloc(sizeof(dia_t));
 
     if (novoDia == NULL)
@@ -253,17 +270,9 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
 
     novoDia->dia = dia;
     novoDia->comprs = novoCompr;
-
-    /* CASO O NOVO DIA SEJA O ÚLTIMO DA LISTA */
-    if (aux->prox == NULL) {
-        novoDia->prox = NULL;
-        aux->prox = novoDia;
-        return 1;
-    }
-
-    /* CASO ESTEJA NO DECORRER DA LISTA */
     novoDia->prox = aux->prox;
-    aux->prox = novoDia;
+    agenda->ptr_mes_atual->dias->prox = novoDia;
+    printf("decorrer da lista\n");
     return 1;
 }
 
@@ -310,16 +319,20 @@ void imprime_agenda_mes(agenda_t* agenda) {
 
     while(auxDias != NULL) {
         while (auxCompr != NULL) {
-            printf("ID: %d\n",auxCompr->id);
-            printf("Início (horas): %d\n",auxCompr->inicio);
-            printf("Fim (horas): %d\n",auxCompr->fim);
+            printf("\nID: %d\n",auxCompr->id);
+            printf("Dia: %d\n",auxDias->dia);
+            printf("Início: %d:%d\n",auxCompr->inicio / 60,auxCompr->inicio % 60);
+            printf("Fim: %d:%d\n",auxCompr->fim / 60, auxCompr->fim % 60);
             printf("Descrição: %s\n",auxCompr->descricao);
-            printf("\n");
 
             auxCompr = auxCompr->prox;
         }
-
+        
         auxDias = auxDias->prox;
+
+        if(auxDias == NULL)
+            break;
+
         auxCompr = auxDias->comprs;
     }
 
