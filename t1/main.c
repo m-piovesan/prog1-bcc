@@ -12,7 +12,7 @@ int main() {
 
     horario_compromisso_t horario = {8, 10, 9, 30};
     horario_compromisso_t horario2 = {16, 12, 19, 30};
-    horario_compromisso_t horario3 = {13, 15, 14, 30};
+    horario_compromisso_t horario3 = {9, 31, 14, 30};
     horario_compromisso_t horario4 = {10, 15, 11, 30};
     horario_compromisso_t horario5 = {8, 10, 9, 30};
     horario_compromisso_t horario6 = {16, 12, 19, 30};

@@ -112,15 +112,23 @@ int testa_intersec(dia_t *listaDias, compromisso_t *novoCompr) {
 
     /* NOVO É O ÚLTIMO COMPROMISSO DO DIA*/
     if (listaDias->comprs->prox == NULL) {
-        listaDias->comprs->prox = novoCompr;
-        return 1;
+        if (novoCompr->inicio > listaDias->comprs->fim) {
+            listaDias->comprs->prox = novoCompr;
+            return 1;
+        }
+
+        return -1;
     }
 
     /* ENCAIXA NOVO NA LISTA DE COMPROMISSOS */
     if (novoCompr->fim < listaDias->comprs->prox->inicio) {
-        novoCompr->prox = listaDias->comprs->prox;
-        listaDias->comprs->prox = novoCompr;
-        return 1;
+        if (novoCompr->inicio > listaDias->comprs->fim) {
+            novoCompr->prox = listaDias->comprs->prox;
+            listaDias->comprs->prox = novoCompr;
+            return 1;
+        }
+
+        return -1;
     }
         
     /* CONFLITO DE HORÁRIO */
@@ -236,7 +244,12 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
         return testa_intersec(aux->prox, novoCompr);
     }
 
-    /* O DIA DO NOVO COMPROMISSO AINDA NÃO FOI MALLOCADO */
+    if (aux->prox == NULL) {
+        printf("dia não mallocado\n");
+        return 0;
+    }
+
+    /* O DIA DO NOVO COMPROMISSO AINDA NÃO FOI MALLOCADO */ 
     // dia_t *novoDia = malloc(sizeof(dia_t));
 
     // if (novoDia == NULL)
