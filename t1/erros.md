@@ -1,9 +1,13 @@
 # problemas:
 
-* função marca_compromisso
 * função prox_mes_agenda
 * função ant_mes_agenda
 
-* marcar compromisso pra um dia que já tem, quando tem mais de 2 dias mallocados no mês
-* lista de dias não está ordenada
-* /*X*/ testa_intersec não tá funcionando (quando tem conflito de horário ele marca mesmo assim)
+* [X] marcar compromisso pra um dia que já tem, quando tem mais de 2 dias mallocados no mês
+
+* [X] quando tenho que mudar o último dia do mês, ele coloca o novo último dia como próx da cabeça
+
+* [X] testa_intersec não tá funcionando (ele não marca mesmo quando não tem conflito de horário)
+    -> o b.o tá quando o novo compromisso é o último da lista
+
+* função remove compromisso
