@@ -10,4 +10,4 @@
 * [X] testa_intersec não tá funcionando (ele não marca mesmo quando não tem conflito de horário)
     -> o b.o tá quando o novo compromisso é o último da lista
 
-* função remove compromisso
+* [X] função remove compromisso

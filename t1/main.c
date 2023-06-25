@@ -40,6 +40,7 @@ int main() {
     }
 
     marca_compromisso_agenda(agenda, 0, compr1);
+
     marca_compromisso_agenda(agenda, 0, compr2);
     
     marca_compromisso_agenda(agenda, 1, compr3);
@@ -50,7 +51,7 @@ int main() {
       
     marca_compromisso_agenda(agenda, 2, compr6);
       
-    marca_compromisso_agenda(agenda, 0, compr7);
+    marca_compromisso_agenda(agenda, 10, compr7);
       
     marca_compromisso_agenda(agenda, 0, compr8);
       
@@ -61,6 +62,11 @@ int main() {
     printf("Agenda do mês atual:\n");
     imprime_agenda_mes(agenda);
 
+    desmarca_compromisso_agenda(agenda, 0, compr8);
+    desmarca_compromisso_agenda(agenda, 1, compr4);
+
+    printf("Agenda do mês atual:\n");
+    imprime_agenda_mes(agenda);
 
     // if (desmarca_compromisso_agenda(agenda, 0, compr2) != 1) {
     //     printf("Erro ao desmarcar compromisso.\n");
@@ -76,16 +82,51 @@ int main() {
 
     
 
-    // int currentMonth = mes_atual_agenda(agenda);
-    // printf("Mês atual: %d\n", currentMonth);
+    int currentMonth = mes_atual_agenda(agenda);
+    printf("\nMês atual: %d\n", currentMonth);
 
-    // ant_mes_agenda(agenda);
-    // currentMonth = mes_atual_agenda(agenda);
-    // printf("Mês anterior: %d\n", currentMonth);
+    ant_mes_agenda(agenda);
+    currentMonth = mes_atual_agenda(agenda);
+    printf("Mês (anterior): %d\n", currentMonth);
 
-    // prox_mes_agenda(agenda);
-    // currentMonth = mes_atual_agenda(agenda);
-    // printf("Próximo mês: %d\n", currentMonth);
+    prox_mes_agenda(agenda);
+    currentMonth = mes_atual_agenda(agenda);
+    printf("mês: %d\n", currentMonth);
+
+    prox_mes_agenda(agenda);
+    currentMonth = mes_atual_agenda(agenda);
+    printf("mês: %d\n", currentMonth);
+    
+    prox_mes_agenda(agenda);
+    currentMonth = mes_atual_agenda(agenda);
+    printf("mês: %d\n", currentMonth);
+    
+    prox_mes_agenda(agenda);
+    currentMonth = mes_atual_agenda(agenda);
+    printf("mês: %d\n", currentMonth);
+    
+    prox_mes_agenda(agenda);
+    currentMonth = mes_atual_agenda(agenda);
+    printf("mês: %d\n", currentMonth);
+    
+
+    ant_mes_agenda(agenda);
+    currentMonth = mes_atual_agenda(agenda);
+    printf("Mês (anterior): %d\n", currentMonth);
+    
+    ant_mes_agenda(agenda);
+    currentMonth = mes_atual_agenda(agenda);
+    printf("Mês (anterior): %d\n", currentMonth);
+    
+    ant_mes_agenda(agenda);
+    currentMonth = mes_atual_agenda(agenda);
+    printf("Mês (anterior): %d\n", currentMonth);
+
+
+    ant_mes_agenda(agenda);
+    currentMonth = mes_atual_agenda(agenda);
+    printf("Mês (anterior): %d\n", currentMonth);
+
 
     // if (marca_compromisso_agenda(agenda, 2, compr2) != 1) {
     //     printf("Erro ao marcar compromisso.\n");
@@ -127,6 +168,14 @@ int main() {
     // ant_mes_agenda(agenda);
     // currentMonth = mes_atual_agenda(agenda);
     // printf("Mês anterior: %d\n", currentMonth);
+
+    prim_mes_agenda(agenda);
+    printf("mês atual agenda: %d\n", mes_atual_agenda(agenda));
+
+    compromisso_t* teste = compr_agenda(agenda, 2);
+    printf("id: %d\n", teste->id);
+    teste = prox_compr(teste);
+    printf("id: %d\n", teste->id);
 
     destroi_agenda(agenda);
 

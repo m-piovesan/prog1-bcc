@@ -8,6 +8,7 @@
     O mes_atual deve ser inicializado com 1; 
     ptr_mes_atual deve ser definido. 
 */
+// [X] VOCÊ TÁ FUNCIONANDO
 agenda_t* cria_agenda() {
     agenda_t *novaAg = malloc(sizeof(agenda_t));
 
@@ -24,8 +25,8 @@ agenda_t* cria_agenda() {
 
     novaAg->ptr_mes_atual->mes = 1;
     novaAg->ptr_mes_atual->dias = NULL;
-    novaAg->ptr_mes_atual->ant = NULL;
-    novaAg->ptr_mes_atual->prox = NULL;
+    novaAg->ptr_mes_atual->ant = novaAg->ptr_mes_atual;
+    novaAg->ptr_mes_atual->prox = novaAg->ptr_mes_atual;
 
     return novaAg;
 }
@@ -36,6 +37,7 @@ agenda_t* cria_agenda() {
    id e uma string de descricao. A funcao deve alocar um novo espaco de 
    armazenamento para receber a string descricao. 
 */ 
+// [X] VOCÊ TÁ FUNCIONANDO
 compromisso_t* cria_compromisso(horario_compromisso_t hc, int id, char* descricao) {
     compromisso_t* novoCompr = malloc(sizeof(compromisso_t));
     
@@ -99,6 +101,9 @@ void destroi_agenda(agenda_t* agenda) {
     return;
 }
 
+/* TESTA INTERSECÇÃO DE HORÁRIOS PARA MARCAR UM NOVO COMPROMISSO NA AGENDA
+    RETORNA 1 EM CASO DE SUCESSO, 0 EM CASO DE ERRO E -1 EM CASO DE INTERSECÇÃO */
+// [X] VOCÊ TÁ FUNCIONANDO
 int testa_intersec(dia_t *listaDias, compromisso_t *novoCompr) {
     /* NOVO TERMINA ANTES DO PRIMEIRO COMEÇAR */
     if (novoCompr->fim < listaDias->comprs->inicio) {
@@ -139,12 +144,14 @@ compromisso_t *listaCompr = listaDias->comprs;
 
 /* COMPROMISSO É O PRIMEIRO DA LISTA */
     if (compr->id == listaCompr->id) {
+        listaDias->comprs = listaCompr->prox;  // Atualiza o ponteiro na lista
+    
         free(listaCompr->descricao);
         listaCompr->descricao = NULL;
-
+    
         free(listaCompr);
         listaCompr = NULL;
-
+    
         return 1;
     }
 
@@ -166,7 +173,7 @@ compromisso_t *listaCompr = listaDias->comprs;
     if (compr->id == listaCompr->prox->id) {
         compromisso_t *remover = listaCompr->prox;
                 
-        listaCompr->prox = listaCompr->prox->prox;
+        listaCompr->prox = remover->prox;
 
         free(remover->descricao);
         remover->descricao = NULL;
@@ -181,6 +188,7 @@ compromisso_t *listaCompr = listaDias->comprs;
     return 0;
 }
 
+// [X] VOCÊ TÁ FUNCIONANDO
 int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
     dia_t *aux = agenda->ptr_mes_atual->dias;
     horario_compromisso_t horario = hc_compr(compr);
@@ -256,26 +264,19 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
    valores de retorno possiveis:
     1: em caso de sucesso
     0: caso nao tenha encontrado o compr */
+// [X] VOCÊ TÁ FUNCIONANDO
 int desmarca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
     dia_t *aux = agenda->ptr_mes_atual->dias;
-    horario_compromisso_t horario = hc_compr(compr);
-    compromisso_t *novoCompr = cria_compromisso(horario, compr->id, compr->descricao);
 
     /* MÊS VAZIO */
     if (aux == NULL) {
-        dia_t *novoDia = malloc(sizeof(dia_t));
-
-        if (novoDia == NULL)
-            return 0;
-
-        novoDia->dia = dia;
-        novoDia->prox = NULL;
-        novoDia->comprs = novoCompr;
-
-        agenda->ptr_mes_atual->dias = novoDia;
-
         printf("mês vazio\n");
-        return 1;
+        return 0;
+    }
+
+    if (aux->dia == dia) {
+        printf("\ndia é o primeiro da lista\n");
+        return procura_compr_remove(compr, agenda->ptr_mes_atual->dias);
     }
 
     /* MÊS COM UM DIA MALLOCADO */
@@ -300,6 +301,7 @@ int desmarca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr)
 }
 
 /* Imprime a agenda do mes atual (mes atual) */
+// [X] VOCÊ TÁ FUNCIONANDO
 void imprime_agenda_mes(agenda_t* agenda) {   
     if (agenda->ptr_mes_atual == NULL)
         return;
@@ -354,73 +356,97 @@ void prim_mes_agenda(agenda_t* agenda) {
 int prox_mes_agenda(agenda_t* agenda) {
     mes_t *aux = agenda->ptr_mes_atual;
 
-    if ((aux->prox->mes) == ((aux->mes) + 1)) {
-        aux = aux->prox;
-        agenda->mes_atual++;
-        return agenda->mes_atual;
-    }
-    
+    if (aux == NULL)
+        return 0;
+
     if (aux->mes == 12) {
         aux = aux->prox;
+        agenda->ptr_mes_atual = aux;
         agenda->mes_atual = 1;
         return agenda->mes_atual;
     }
 
+    if (aux->prox->mes == aux->mes + 1) {
+        aux = aux->prox;
+        agenda->ptr_mes_atual = aux;
+        agenda->mes_atual++;
+        return agenda->mes_atual;
+    }
+
     mes_t *novoMes = malloc(sizeof(mes_t));
 
     if (novoMes == NULL)
         return 0;
 
+    novoMes->mes = aux->mes + 1;
     novoMes->prox = aux->prox;
     novoMes->ant = aux;
-    novoMes->mes = aux->mes + 1;
 
-    aux->prox->ant = novoMes;
-    aux->prox = novoMes;
-    aux = aux->prox;
-    
-    agenda->mes_atual = aux->mes;
+    agenda->ptr_mes_atual->prox = novoMes;
+    agenda->ptr_mes_atual = agenda->ptr_mes_atual->prox;
+    agenda->mes_atual++;
 
-    return aux->mes;
+    return agenda->mes_atual; 
 }
 
-/* Analogo ao prox_mes_agenda porem decrementa mes_atual. */ 
 int ant_mes_agenda(agenda_t* agenda) {
     mes_t *aux = agenda->ptr_mes_atual;
 
-   if ((aux->ant->mes) == ((aux->mes) - 1)) {
-        aux = aux->ant;
-        agenda->mes_atual--;
-        return agenda->mes_atual;
-    }
-    
-    if (aux->mes == 1) {
-        aux = aux->ant;
-        agenda->mes_atual = 12;
-        return agenda->mes_atual;
-    }
-
-    mes_t *novoMes = malloc(sizeof(mes_t));
-
-    if (novoMes == NULL)
+    if (aux == NULL)
         return 0;
 
-    novoMes->mes = aux->mes - 1;
-    novoMes->prox = aux;
-    novoMes->ant = aux->ant;
-    
-    aux->ant->prox = novoMes;
-    aux->ant = novoMes;
-    aux = aux->ant;
+    if (aux->ant->mes >= aux->mes) {
+        if (aux->mes == 1) {
+            if(aux->prox->mes == 1 && aux->prox->prox->mes == 1) {
+                mes_t *novoMes = malloc(sizeof(mes_t));
 
-    agenda->mes_atual = aux->mes;
+                if (novoMes == NULL)
+                    return 0;
+            
+                novoMes->mes = 12;
+                novoMes->ant = aux->ant;
+                novoMes->prox = aux;
 
-    return aux->mes;
+                aux->ant = novoMes;
+                aux->prox = novoMes;
+                agenda->ptr_mes_atual = novoMes;
+                agenda->mes_atual = 12;
+
+                return agenda->mes_atual;    
+            }
+                
+            aux = aux->ant;
+            agenda->ptr_mes_atual = aux;
+            agenda->mes_atual = 12;
+            return agenda->mes_atual;
+        }
+        
+        mes_t *novoMes = malloc(sizeof(mes_t));
+
+        if (novoMes == NULL)
+            return 0;
+
+        novoMes->mes = aux->mes - 1;
+        novoMes->ant = aux->ant;
+        novoMes->prox = aux;
+
+        agenda->ptr_mes_atual->ant = novoMes;
+        agenda->ptr_mes_atual = aux->ant;
+        agenda->mes_atual--;
+
+        return agenda->mes_atual;
+    }
+
+    agenda->ptr_mes_atual = aux->ant;
+    agenda->mes_atual = aux->mes - 1;
+    return agenda->mes_atual;       
 }
+
 
 /* Retorna um ponteiro para a lista ligada de compromissos de um dia do mes
    ou NULL se vazia. A lista de compromissos retornada pode ser percorrida
    usando-se a funcao prox_compr. */ 
+// [X] VOCÊ TÁ FUNCIONANDO
 compromisso_t* compr_agenda(agenda_t* agenda, int dia) {
     dia_t *procuraDia = agenda->ptr_mes_atual->dias;
 
@@ -437,6 +463,7 @@ compromisso_t* compr_agenda(agenda_t* agenda, int dia) {
 }
 
 /* Retorna o próximo compromisso da lista de compromissos compr */
+// [X] VOCÊ TÁ FUNCIONANDO
 compromisso_t* prox_compr(compromisso_t* compr) {
     if (compr == NULL)
         return NULL;
@@ -446,6 +473,7 @@ compromisso_t* prox_compr(compromisso_t* compr) {
 
 /* As funcoes abaixo sao usadas para acessar os membros da struct compromisso
    obtidos com a funcao prox_compr. */
+// [X] VOCÊ TÁ FUNCIONANDO
 horario_compromisso_t hc_compr(compromisso_t* compr) {
     horario_compromisso_t horario;
 
@@ -465,12 +493,3 @@ int id_compr(compromisso_t* compr) {
 char* descricao_compr(compromisso_t* compr) {
     return compr->descricao;
 }
-
-/*  Essa funcao nao eh extritamente necessaria, o objetivo é
-    que o programa principal apresente os dados. 
-    Porem pode ser util para voces durante o desenvolvimento 
-
-void imprime_agenda_mes(agenda_t* agenda) {
-
-}
-*/
