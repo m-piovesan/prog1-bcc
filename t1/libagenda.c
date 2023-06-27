@@ -8,8 +8,8 @@
     O mes_atual deve ser inicializado com 1; 
     ptr_mes_atual deve ser definido. 
 */
-// [X] VOCÊ TÁ FUNCIONANDO
-agenda_t* cria_agenda() {
+/* [X] VOCÊ TÁ FUNCIONANDO */
+agenda_t *cria_agenda() {
     agenda_t *novaAg = malloc(sizeof(agenda_t));
 
     if(novaAg == NULL)
@@ -37,7 +37,7 @@ agenda_t* cria_agenda() {
    id e uma string de descricao. A funcao deve alocar um novo espaco de 
    armazenamento para receber a string descricao. 
 */ 
-// [X] VOCÊ TÁ FUNCIONANDO
+/* [X] VOCÊ TÁ FUNCIONANDO */
 compromisso_t* cria_compromisso(horario_compromisso_t hc, int id, char* descricao) {
     compromisso_t* novoCompr = malloc(sizeof(compromisso_t));
     
@@ -63,47 +63,62 @@ compromisso_t* cria_compromisso(horario_compromisso_t hc, int id, char* descrica
 
 /* Libera toda memoria associado a agenda. */
 void destroi_agenda(agenda_t* agenda) {
-    mes_t *auxMes = agenda->ptr_mes_atual;
-    mes_t *removerMes = auxMes;
+    if (agenda == NULL)
+        return;
 
-    while (auxMes != NULL) {
-        dia_t *auxDia = auxMes->dias;
-        dia_t *removerDia = auxDia;
+    mes_t* atual = agenda->ptr_mes_atual;
 
-        while (auxDia != NULL) {
-            compromisso_t *auxCompr = auxDia->comprs;
-            compromisso_t *removerCompr = auxCompr;
+    if (atual == NULL)
+        return;
 
-            while (auxCompr != NULL) {
-                auxCompr = auxCompr->prox;
-                free(removerCompr->descricao);
-                removerCompr->descricao = NULL;
-                free(removerCompr);
-                removerCompr = NULL;
-                removerCompr = auxCompr;
+    mes_t* prox = atual->prox;
+
+    while (prox != agenda->ptr_mes_atual) {
+        // Libera os compromissos do mês atual
+        dia_t* dia = atual->dias;
+        while (dia != NULL) {
+            compromisso_t* compr = dia->comprs;
+            while (compr != NULL) {
+                compromisso_t* proxCompr = compr->prox;
+                free(compr->descricao);
+                free(compr);
+                compr = proxCompr;
             }
-
-            auxDia = auxDia->prox;
-            free(removerDia);
-            removerDia = NULL;
-            removerDia = auxDia;
+            dia_t* proxDia = dia->prox;
+            free(dia);
+            dia = proxDia;
         }
 
-        auxMes = auxMes->prox;
-        free(removerMes);
-        removerMes = NULL;
-        removerMes = auxMes;
+        mes_t* proxAtual = prox;
+        prox = prox->prox;
+        free(atual);
+        atual = proxAtual;
     }
 
-    free(agenda);
-    agenda = NULL;
+    // Libera os compromissos do último mês
+    dia_t* dia = atual->dias;
+    while (dia != NULL) {
+        compromisso_t* compr = dia->comprs;
+        while (compr != NULL) {
+            compromisso_t* proxCompr = compr->prox;
+            free(compr->descricao);
+            free(compr);
+            compr = proxCompr;
+        }
+        dia_t* proxDia = dia->prox;
+        free(dia);
+        dia = proxDia;
+    }
 
-    return;
+    free(atual);
+    agenda->ptr_mes_atual = NULL;
+    agenda->mes_atual = 0;
+    free(agenda);
 }
 
 /* TESTA INTERSECÇÃO DE HORÁRIOS PARA MARCAR UM NOVO COMPROMISSO NA AGENDA
     RETORNA 1 EM CASO DE SUCESSO, 0 EM CASO DE ERRO E -1 EM CASO DE INTERSECÇÃO */
-// [X] VOCÊ TÁ FUNCIONANDO
+/* [X] VOCÊ TÁ FUNCIONANDO */
 int testa_intersec(dia_t *listaDias, compromisso_t *novoCompr) {
     /* NOVO TERMINA ANTES DO PRIMEIRO COMEÇAR */
     if (novoCompr->fim < listaDias->comprs->inicio) {
@@ -144,7 +159,7 @@ compromisso_t *listaCompr = listaDias->comprs;
 
 /* COMPROMISSO É O PRIMEIRO DA LISTA */
     if (compr->id == listaCompr->id) {
-        listaDias->comprs = listaCompr->prox;  // Atualiza o ponteiro na lista
+        listaDias->comprs = listaCompr->prox;  /* Atualiza o ponteiro na lista */
     
         free(listaCompr->descricao);
         listaCompr->descricao = NULL;
@@ -188,7 +203,7 @@ compromisso_t *listaCompr = listaDias->comprs;
     return 0;
 }
 
-// [X] VOCÊ TÁ FUNCIONANDO
+/* [X] VOCÊ TÁ FUNCIONANDO */
 int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
     dia_t *aux = agenda->ptr_mes_atual->dias;
     horario_compromisso_t horario = hc_compr(compr);
@@ -264,7 +279,7 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
    valores de retorno possiveis:
     1: em caso de sucesso
     0: caso nao tenha encontrado o compr */
-// [X] VOCÊ TÁ FUNCIONANDO
+/* [X] VOCÊ TÁ FUNCIONANDO */
 int desmarca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
     dia_t *aux = agenda->ptr_mes_atual->dias;
 
@@ -301,11 +316,11 @@ int desmarca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr)
 }
 
 /* Imprime a agenda do mes atual (mes atual) */
-// [X] VOCÊ TÁ FUNCIONANDO
+/* [X] VOCÊ TÁ FUNCIONANDO */
 void imprime_agenda_mes(agenda_t* agenda) {   
-    if (agenda->ptr_mes_atual == NULL)
+    if ((agenda->ptr_mes_atual == NULL) || (agenda->ptr_mes_atual->dias == NULL))
         return;
-    
+
     dia_t *auxDias = agenda->ptr_mes_atual->dias;
     compromisso_t *auxCompr = auxDias->comprs;
 
@@ -350,9 +365,6 @@ void prim_mes_agenda(agenda_t* agenda) {
  * O ponteiro ptr_mes_atual deve ser atualizado para apontar para o novo mes_atual.
  * Se o novo mes_atual nao existir deve ser alocado. A funcao retorna o inteiro 
  * mes_atual em caso de sucesso ou 0 caso contrario.  */ 
-
-// CORRIGIR ESSA FUNÇÃO E A ANT_MES
-
 int prox_mes_agenda(agenda_t* agenda) {
     mes_t *aux = agenda->ptr_mes_atual;
 
@@ -446,7 +458,7 @@ int ant_mes_agenda(agenda_t* agenda) {
 /* Retorna um ponteiro para a lista ligada de compromissos de um dia do mes
    ou NULL se vazia. A lista de compromissos retornada pode ser percorrida
    usando-se a funcao prox_compr. */ 
-// [X] VOCÊ TÁ FUNCIONANDO
+/* [X] VOCÊ TÁ FUNCIONANDO */
 compromisso_t* compr_agenda(agenda_t* agenda, int dia) {
     dia_t *procuraDia = agenda->ptr_mes_atual->dias;
 
@@ -463,7 +475,7 @@ compromisso_t* compr_agenda(agenda_t* agenda, int dia) {
 }
 
 /* Retorna o próximo compromisso da lista de compromissos compr */
-// [X] VOCÊ TÁ FUNCIONANDO
+/* [X] VOCÊ TÁ FUNCIONANDO */
 compromisso_t* prox_compr(compromisso_t* compr) {
     if (compr == NULL)
         return NULL;
@@ -473,7 +485,7 @@ compromisso_t* prox_compr(compromisso_t* compr) {
 
 /* As funcoes abaixo sao usadas para acessar os membros da struct compromisso
    obtidos com a funcao prox_compr. */
-// [X] VOCÊ TÁ FUNCIONANDO
+/* [X] VOCÊ TÁ FUNCIONANDO */
 horario_compromisso_t hc_compr(compromisso_t* compr) {
     horario_compromisso_t horario;
 

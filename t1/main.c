@@ -89,6 +89,9 @@ int main() {
     currentMonth = mes_atual_agenda(agenda);
     printf("Mês (anterior): %d\n", currentMonth);
 
+    imprime_agenda_mes(agenda);
+
+
     prox_mes_agenda(agenda);
     currentMonth = mes_atual_agenda(agenda);
     printf("mês: %d\n", currentMonth);

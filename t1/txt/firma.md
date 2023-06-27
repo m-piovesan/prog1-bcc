@@ -17,10 +17,10 @@ A firma deve ter 30 funcionários, numerados de 0 a 29.
 
 Cada tarefa é caracterizada por:
 
-    Tempo de conclusão: a quantidade de tempo necessária para completar a
+  - Tempo de conclusão: a quantidade de tempo necessária para completar a
     tarefa.  
 
-    Dificuldade: um valor entre 0 e 100 que afeta o tempo necessário para
+  - Dificuldade: um valor entre 0 e 100 que afeta o tempo necessário para
     os funcionários concluírem a tarefa.
 
 A firma deve ter 100 tarefas, numeradas de 0 a 99.
