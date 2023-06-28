@@ -61,6 +61,19 @@ compromisso_t* cria_compromisso(horario_compromisso_t hc, int id, char* descrica
     return novoCompr;
 }
 
+/* destroi a descricao de um compromisso */
+void destroi_descricao_compromisso(compromisso_t* compr) {
+    free(compr->descricao);
+    compr->descricao = NULL;
+}
+
+/* destroi um compromisso */
+void destroi_compromisso(compromisso_t* compr) {
+    destroi_descricao_compromisso(compr);
+    free(compr);
+    compr = NULL;
+}
+
 /* Libera toda memoria associado a agenda. */
 void destroi_agenda(agenda_t* agenda) {
     if (agenda == NULL)
@@ -80,8 +93,7 @@ void destroi_agenda(agenda_t* agenda) {
             compromisso_t* compr = dia->comprs;
             while (compr != NULL) {
                 compromisso_t* proxCompr = compr->prox;
-                free(compr->descricao);
-                free(compr);
+                destroi_compromisso(compr);
                 compr = proxCompr;
             }
             dia_t* proxDia = dia->prox;

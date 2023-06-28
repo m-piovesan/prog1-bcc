@@ -86,6 +86,12 @@ typedef struct horario_compromisso {
 */
 compromisso_t *cria_compromisso(horario_compromisso_t hc, int id, char *descricao);
 
+/* destroi a descricao de um compromisso */
+void destroi_descricao_compromisso(compromisso_t* compr);
+
+/* destroi um compromisso */
+void destroi_compromisso(compromisso_t* compr);
+
 /* Libera toda memoria associado a agenda. */
 void destroi_agenda(agenda_t* agenda);
 
