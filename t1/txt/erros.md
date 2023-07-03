@@ -19,3 +19,10 @@
 ==3948==    at 0x4848899: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
 ==3948==    by 0x109EF0: ant_mes_agenda (in /home/piove/Desktop/college/prog1-bcc/t1/agenda)
 ==3948==    by 0x10A6B7: main (in /home/piove/Desktop/college/prog1-bcc/t1/agenda)
+
+
+* [X] gerar id aleatório, atualmente eles são ordenados de acordo com vetor [0..100]
+
+* lembrar de dar free no vetor que armazena os ID's que já foram 
+
+* colocar comentários explicando as funções auxiliares (cabeçalhos)

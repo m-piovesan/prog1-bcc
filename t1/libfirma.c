@@ -2,11 +2,14 @@
 #include <stdlib.h>
 #include <time.h>
 #include "libagenda.h"
+#define MAX_TAM_STRING 35
+#define TOTAL_FUNCIONARIOS 30
+#define TOTAL_TAREFAS 100
 
 typedef struct funcionario {
     int lideranca;
     int experiencia;
-    compromisso_t* agenda;
+    agenda_t* agenda;
 } funcionario_t;
 
 typedef struct tarefa {
@@ -15,12 +18,12 @@ typedef struct tarefa {
 } tarefa_t;
 
 funcionario_t *inicializa_funcionarios() {
-    funcionario_t *vetFuncionarios = malloc(sizeof(funcionario_t) * 30);
+    funcionario_t *vetFuncionarios = malloc(sizeof(funcionario_t) * TOTAL_FUNCIONARIOS);
 
     if (vetFuncionarios == NULL) 
         return NULL;
 
-    for (int i = 0; i < 30; i++) {
+    for (int i = 0; i < TOTAL_FUNCIONARIOS; i++) {
         vetFuncionarios[i].lideranca = rand() % 101;
         vetFuncionarios[i].experiencia = (rand() % (100 - 20 + 1)) + 20;
         vetFuncionarios[i].agenda = cria_agenda();
@@ -57,8 +60,32 @@ horario_compromisso_t gera_horario() {
     return horario;
 }
 
-int gera_id() {
-    return rand() % 100;
+compromisso_t *formata_compromisso (funcionario_t *funcionarios, int dia, int idFunc, int idTarefa) {
+    compromisso_t *novoCompr;
+    horario_compromisso_t horarioReuni = gera_horario();
+
+    char descricao[MAX_TAM_STRING];
+    sprintf(descricao, "REUNIR L %.2d %.2d/%.2d %.2d:%.2d %.2d:%.2d T %.2d", idFunc, dia, funcionarios[idFunc].agenda->mes_atual, horarioReuni.ini_h, horarioReuni.ini_m, horarioReuni.fim_h, horarioReuni.fim_m, idTarefa);
+
+    novoCompr = cria_compromisso(horarioReuni, idTarefa, descricao);
+
+    return novoCompr;
+}
+
+void zera_vetor(int vet[], int tam) {
+    for(int i = 0; i < tam; i++) 
+        vet[i] = 0;
+}
+
+int gera_id_tarefas(int vet[]) {
+    int id = rand() % 100;
+
+    while (vet[id])
+        id = rand() % 100;
+
+    vet[id] = 1;
+
+    return id;
 }
 
 int main() {
@@ -66,60 +93,70 @@ int main() {
 
     funcionario_t *funcionarios = inicializa_funcionarios();
     tarefa_t *tarefas = inicializa_tarefas();
+    int vetIdTarefa = malloc(sizeof(int) * TOTAL_TAREFAS);
 
     /* ESCOLHER FUNCIONÁRIO ALEATÓRIO DE 1 A 100 */
-    int aleat = rand() % 31;
+    int idLider = rand() % 31;
 
     if (funcionarios == NULL || tarefas == NULL)
-        return 1;
+            return 1;
 
-    for (int i = 0; i < 100; i++) {
+    do {    
+        /* LOOP PRA MARCAR AS 100 TAREFAS DO MÊS */
+        for (int i = 0; i < TOTAL_TAREFAS; i++) {
 
-        /* ACHAR UM LÍDER (30 < valor.liderança < 70) */
-        while ((funcionarios[aleat].lideranca > 29) && (funcionarios[aleat].lideranca < 71))
-            aleat = rand() % 31;
+            /* ACHAR UM LÍDER (30 < valorLiderança < 70) */
+            while ((funcionarios[idLider].lideranca > 29) && (funcionarios[idLider].lideranca < 71))
+                idLider = rand() % 31;
 
-        /* GERA DIA ALEATÓRIO E CRIA COMPROMISSO */
-        int diaReuniao = rand() % (31) + 1;
-        compromisso_t *novoCompr = cria_compromisso(gera_horario(), gera_id(), "Reuniao");
-        
-        hc_compr(novoCompr); // usar essa função pra pegar as horas de início e minutos e tals
+            /* GERA DIA E ID ALEATÓRIOS, DAÍ CRIA COMPROMISSO */
+            int diaReuniao = rand() % (31) + 1;
+            zera_vetor(vetIdTarefa, TOTAL_TAREFAS);
+            compromisso_t *novoCompr = formata_compromisso(funcionarios, diaReuniao, idLider, gera_id_tarefas(vetIdTarefa));
 
-        "REUNIR L %.2d %.2d/%.2d %.2d:%.2d %.2d:%.2d T %.2d", aleat, i, /* mes_atual */,  
+            /* SE A AGENDA DO LÍDER ESTIVER DISPONÍVEL, PROCURA 2-6 FUNCIONÁRIOS PRA MESMA TAREFA */
+            if (marca_compromisso_agenda(funcionarios[idLider].agenda, diaReuniao, novoCompr)) {
+                int marcaDisponibilidade = 0;
+                int nFuncionariosAleat = (rand() % 5) + 2;
 
-        - os valores são o LIDER, DIA, mes_atual, ini_h, ini_m, fim_h, fim_m, tarefa 
+                printf("%s\tMEMBROS: ",novoCompr->descricao);
 
-        /* SE A AGENDA DO LÍDER ESTIVER DISPONÍVEL, MARCA E PROCURA 2-6 FUNCIONÁRIOS PRA MESMA TAREFA */
-        if (marca_compromisso_agenda(funcionarios[aleat].agenda, diaReuniao, novoCompr)) {
-            int marcaDisponibilidade = 0;
-            
-            for (int j = 0; j < (rand() % 5) + 2; j++) {
-                int aleat2 = rand() % 31;
-                if ((funcionarios[aleat2].experiencia + (rand() % 31) - 20) < funcionarios[aleat].lideranca) {
-                    if (marca_compromisso_agenda(funcionarios[aleat2].agenda, diaReuniao, novoCompr /* ver isso aqui hein, não sei que compromisso tem que passar nesse parâmetro */))
-                        marcaDisponibilidade++;   
+                for (int j = 0; j < nFuncionariosAleat; j++) {
+                    int funcAleat = rand() % 31;
+                    
+                    if ((funcionarios[funcAleat].experiencia + (rand() % 31) - 20) < funcionarios[idLider].lideranca) {
+                        printf(" %.2d:",funcionarios[funcAleat]);
+                        
+                        if (marca_compromisso_agenda(funcionarios[funcAleat].agenda, diaReuniao, novoCompr)) {
+                            marcaDisponibilidade++;
+                            printf("OK");   
+                        } else
+                            printf("IN"); // dar um jeito de quantos todos for IN, imprimir só vazia
+                    }
                 }
-            }
+
+                /* SE NENHUM FUNCIONÁRIO PUDER PARTICIPAR, DESMARCA A REUNIÃO */
+                if(!marcaDisponibilidade) {
+                    desmarca_compromisso_agenda(funcionarios[idLider].agenda, diaReuniao, novoCompr);
+                    printf("VAZIA");
+                }
             
-            /* SE NENHUM FUNCIONÁRIO PUDER PARTICIPAR, DESMARCA A REUNIÃO */
-            if(!marcaDisponibilidade)
-                desmarca_compromisso_agenda(funcionarios[aleat].agenda, diaReuniao, novoCompr);
-            else 
+            } else 
+                printf("\tLIDER INDISPONIVEL \n");     
+        }   
+        
+        for (int j = 0; j < 30; j++)
+            prox_mes_agenda(funcionarios[j].agenda);
+    } while (funcionarios[29].agenda->mes_atual != 1);  
 
-
-        } else 
-            printf("\tLIDER INDISPONIVEL \n");
-
-        // prox_mes_agenda(); qual agenda passar no parâmetro?
-    }
-
-    prim_mes_agenda(/* sei lá zé */);
+    for (int i = 0; i < 30; i++)
+        prim_mes_agenda(funcionarios[i].agenda);
 
     for (int i = 1; i < 32; i++) {
         int t = 0;
 
         if (tarefas[t].tempo_conclusao > 0) {
-            tarefas[t].tempo_conclusao -= min_trab * (funcionarios[/* não sei qual */].experiencia / 100.0) * ((100 - tarefas[t].dificuldade) / 100.0);
+            tarefas[t].tempo_conclusao -= tarefas[i]. mintrab * (funcionarios[/* não sei qual */].experiencia / 100.0) * ((100 - tarefas[t].dificuldade) / 100.0);
         }
     }
 
