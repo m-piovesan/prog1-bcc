@@ -1,7 +1,9 @@
-CC = gcc
-CFLAGS = -Wall -Wextra -std=c11
+CFLAGS = -Wall -g # flags de compilacao
+LDFLAGS = 
 
-OBJS = libagenda.o main.o
+CC = gcc
+
+OBJS = libagenda.o libfirma.o
 TARGET = agenda
 
 all: $(TARGET)
@@ -12,8 +14,8 @@ $(TARGET): $(OBJS)
 libagenda.o: libagenda.c libagenda.h
 	$(CC) $(CFLAGS) -c libagenda.c
 
-main.o: main.c libagenda.h
-	$(CC) $(CFLAGS) -c main.c
+libfirma.o: libfirma.c libagenda.h
+	$(CC) $(CFLAGS) -c libfirma.c
 
 clean:
 	rm -f $(OBJS) $(TARGET)

@@ -1,10 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 #include "libagenda.h"
+
 #define MAX_TAM_STRING 35
 #define TOTAL_FUNCIONARIOS 30
 #define TOTAL_TAREFAS 100
+#define DIAS_MES 31
+#define MESES_ANO 12
 
 typedef struct funcionario {
     int lideranca;
@@ -17,36 +21,19 @@ typedef struct tarefa {
     int dificuldade;
 } tarefa_t;
 
-funcionario_t *inicializa_funcionarios() {
-    funcionario_t *vetFuncionarios = malloc(sizeof(funcionario_t) * TOTAL_FUNCIONARIOS);
-
-    if (vetFuncionarios == NULL) 
-        return NULL;
-
+void inicializa_funcionarios(funcionario_t *vetFuncionarios) {
     for (int i = 0; i < TOTAL_FUNCIONARIOS; i++) {
         vetFuncionarios[i].lideranca = rand() % 101;
         vetFuncionarios[i].experiencia = (rand() % (100 - 20 + 1)) + 20;
         vetFuncionarios[i].agenda = cria_agenda();
-
-        if (vetFuncionarios[i].agenda == NULL)
-            return NULL;
     }
-
-    return vetFuncionarios;
 }
 
-tarefa_t *inicializa_tarefas() {
-    tarefa_t *vetTarefas = malloc(sizeof(tarefa_t) * 100);
-
-    if (vetTarefas == NULL)
-        return NULL;
-
-    for (int i = 0; i < 100; i++) {
+void inicializa_tarefas(tarefa_t *vetTarefas) {
+    for (int i = 0; i < 100; i++) { 
         vetTarefas[i].tempo_conclusao = (rand() % (800 - 600 + 1)) + 600;
         vetTarefas[i].dificuldade = (rand() % (80 - 30 + 1)) + 30;
     }
-
-    return vetTarefas;
 }
 
 horario_compromisso_t gera_horario() {
@@ -91,23 +78,30 @@ int gera_id_tarefas(int vet[]) {
 int main() {
     srand(time(NULL));
 
-    funcionario_t *funcionarios = inicializa_funcionarios();
-    tarefa_t *tarefas = inicializa_tarefas();
-    int vetIdTarefa = malloc(sizeof(int) * TOTAL_TAREFAS);
+    funcionario_t funcionarios[TOTAL_FUNCIONARIOS];
+    inicializa_funcionarios(funcionarios);
 
-    /* ESCOLHER FUNCIONÁRIO ALEATÓRIO DE 1 A 100 */
-    int idLider = rand() % 31;
+    tarefa_t tarefas[TOTAL_TAREFAS];
+    inicializa_tarefas(tarefas);
 
-    if (funcionarios == NULL || tarefas == NULL)
-            return 1;
+    // funcionario_t *funcionarios = malloc(sizeof(funcionario_t) * TOTAL_FUNCIONARIOS);
+    // inicializa_funcionarios(funcionarios);
+
+    // tarefa_t *tarefas = malloc(sizeof(tarefa_t) * TOTAL_TAREFAS);
+    // inicializa_tarefas(tarefas);
+
+    int vetIdTarefa[TOTAL_TAREFAS];    
 
     do {    
-        /* LOOP PRA MARCAR AS 100 TAREFAS DO MÊS */
+        /* LOOP PRA MARCAR AS 100 REUNIÕES DO MÊS */
         for (int i = 0; i < TOTAL_TAREFAS; i++) {
+
+            /* ESCOLHER FUNCIONÁRIO ALEATÓRIO DE 1 A 30 */    
+            int idLider = rand() % 30;
 
             /* ACHAR UM LÍDER (30 < valorLiderança < 70) */
             while ((funcionarios[idLider].lideranca > 29) && (funcionarios[idLider].lideranca < 71))
-                idLider = rand() % 31;
+                idLider = rand() % 30;
 
             /* GERA DIA E ID ALEATÓRIOS, DAÍ CRIA COMPROMISSO */
             int diaReuniao = rand() % (31) + 1;
@@ -119,46 +113,85 @@ int main() {
                 int marcaDisponibilidade = 0;
                 int nFuncionariosAleat = (rand() % 5) + 2;
 
-                printf("%s\tMEMBROS: ",novoCompr->descricao);
+                printf("\n%s\tMEMBROS: ",novoCompr->descricao);
 
                 for (int j = 0; j < nFuncionariosAleat; j++) {
                     int funcAleat = rand() % 31;
                     
+                    /* bigode aqui embaixo */
                     if ((funcionarios[funcAleat].experiencia + (rand() % 31) - 20) < funcionarios[idLider].lideranca) {
-                        printf(" %.2d:",funcionarios[funcAleat]);
+                        printf(" %.2d:",funcAleat);
                         
+                    /* bigode aqui embaixo */
                         if (marca_compromisso_agenda(funcionarios[funcAleat].agenda, diaReuniao, novoCompr)) {
                             marcaDisponibilidade++;
-                            printf("OK");   
-                        } else
-                            printf("IN"); // dar um jeito de quantos todos for IN, imprimir só vazia
+                            printf("OK ");   
+                        } else {
+                            printf("IN ");
+                        }
                     }
-                }
+                }                
 
-                /* SE NENHUM FUNCIONÁRIO PUDER PARTICIPAR, DESMARCA A REUNIÃO */
+                /* SE NENHUM FUNCIONÁRIO PUDER PARTICIPAR, DESMARCA A REUNIÃO DO LÍDER */
                 if(!marcaDisponibilidade) {
                     desmarca_compromisso_agenda(funcionarios[idLider].agenda, diaReuniao, novoCompr);
-                    printf("VAZIA");
+                    printf(" VAZIA");
                 }
             
             } else 
-                printf("\tLIDER INDISPONIVEL \n");     
+                printf("\tLIDER INDISPONIVEL");     
         }   
         
         for (int j = 0; j < 30; j++)
             prox_mes_agenda(funcionarios[j].agenda);
     } while (funcionarios[29].agenda->mes_atual != 1);  
 
-    for (int i = 0; i < 30; i++)
+/* FINAL DA INICIALIZAÇÃO DAS PARADAS  -------------------------------------------------------- */
+
+    /* volta todos os funcionários pro mês 1*/
+    for (int i = 0; i < TOTAL_FUNCIONARIOS; i++)
         prim_mes_agenda(funcionarios[i].agenda);
+    
+    int reunioesTotais = 0;
 
-    for (int i = 1; i < 32; i++) {
-        int t = 0;
+    /* LOOP DE CADA DIA DO ANO PARA REALIZAR AS REUNIÕES */
+    for (int k = 1; k <= MESES_ANO; k++) {
+        for (int i = 1; i <= DIAS_MES; i++) {
+        
+            /* LOOP DE CADA FUNCIONÁRIO */
+            for (int j = 0; j < TOTAL_FUNCIONARIOS; j++) {
+                dia_t *aux = funcionarios[j].agenda->ptr_mes_atual->dias;
+                compromisso_t *listaCompr = funcionarios[j].agenda->ptr_mes_atual->dias->comprs;
+                int t = aux->comprs->id;
 
-        if (tarefas[t].tempo_conclusao > 0) {
-            tarefas[t].tempo_conclusao -= tarefas[i]. mintrab * (funcionarios[/* não sei qual */].experiencia / 100.0) * ((100 - tarefas[t].dificuldade) / 100.0);
+                if (listaCompr != NULL) {
+                    while ((aux->dia <= i) && (listaCompr != NULL)) {
+                        
+                        if (aux->dia == i) {
+                            if (tarefas[t].tempo_conclusao > 0) {
+                                tarefas[t].tempo_conclusao -= (listaCompr->inicio - listaCompr->fim) * (funcionarios[j].experiencia / 100.0) * ((100 - tarefas[t].dificuldade) / 100.0);
+                                reunioesTotais++;
+                                printf("%.2d/%.2d F %.2d: %s \n\tT %.2d D %.2d TCR %.2d\n",i,funcionarios[j].agenda->mes_atual,j,listaCompr->descricao,listaCompr->id, tarefas[listaCompr->id].dificuldade, tarefas[listaCompr->id].tempo_conclusao);
+                            } else {
+                                if (funcionarios[j].experiencia < 100)
+                                    funcionarios[j].experiencia++;
+
+                                printf("%.2d/%.2d F %.2d: %s \n\tT %.2d CONCLUIDA\n",i,funcionarios[j].agenda->mes_atual,j,listaCompr->descricao,listaCompr->id);
+                            }
+                        }
+
+                        listaCompr = listaCompr->prox;
+                    }
+                }   
+            }
         }
+
+        for (int j = 0; j < 30; j++)
+            prox_mes_agenda(funcionarios[j].agenda);
     }
 
+    printf("REUNIOES REALIZADAS %.2d\n", reunioesTotais);
+    printf("TAREFAS CONCLUIDAS %.2d\n", TOTAL_TAREFAS);
+    
     return 0;
 }

@@ -26,3 +26,38 @@
 * lembrar de dar free no vetor que armazena os ID's que já foram 
 
 * colocar comentários explicando as funções auxiliares (cabeçalhos)
+
+* fazer testes de dia inválido na função marca compromisso e tals (ex: dia 32)
+
+
+
+
+
+
+// ----------------------- RASCUNHO ---------------------------------------------
+
+if(aux->prox == NULL) {
+                    if(tarefas[t].tempo_conclusao > 0) {
+                        tarefas[t].tempo_conclusao -= (aux->inicio - aux->fim) * (funcionarios[j].experiencia / 100.0) * ((100 - tarefas[t].dificuldade) / 100.0);
+                        printf("%.2d/%.2d F %.2d: %s \n\tT %.2d D %.2d TCR %.2d\n",i,funcionarios[j].agenda->mes_atual,j,aux->descricao,aux->id, tarefas[aux->id].dificuldade, tarefas[aux->id].tempo_conclusao);
+                    } else {
+                        if(funcionarios[j].experiencia < 100)
+                            funcionarios[j].experiencia++;
+                        
+                        printf("%.2d/%.2d F %.2d: %s \n\tT %.2d CONCLUIDA\n",i,funcionarios[j].agenda->mes_atual,j,aux->descricao,aux->id);
+                    }
+                } else {
+                    while(aux->prox != NULL) {
+                        if(tarefas[t].tempo_conclusao > 0) {
+                            tarefas[t].tempo_conclusao -= (aux->inicio - aux->fim) * (funcionarios[j].experiencia / 100.0) * ((100 - tarefas[t].dificuldade) / 100.0);
+                            printf("%.2d/%.2d F %.2d: %s \n\tT %.2d D %.2d TCR %.2d\n",i,funcionarios[j].agenda->mes_atual,j,aux->descricao,aux->id, tarefas[aux->id].dificuldade, tarefas[aux->id].tempo_conclusao);
+                        } else {
+                            if(funcionarios[j].experiencia < 100) 
+                                funcionarios[j].experiencia++;
+                            
+                            printf("%.2d/%.2d F %.2d: %s \n\tT %.2d CONCLUIDA\n",i,funcionarios[j].agenda->mes_atual,j,aux->descricao,aux->id);
+                        }
+
+                        aux = aux->prox;
+                    } 
+                }
