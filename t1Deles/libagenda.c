@@ -81,50 +81,35 @@ void destroi_agenda(agenda_t* agenda) {
     if (agenda == NULL)
         return;
 
-    mes_t* atual = agenda->ptr_mes_atual;
+    prim_mes_agenda(agenda);
+    mes_t* mesAtual = agenda->ptr_mes_atual;
 
-    if (atual == NULL)
+    if (mesAtual == NULL)
         return;
 
-    mes_t* prox = atual->prox;
+    mesAtual->ant->prox = NULL;
 
-    while (prox != agenda->ptr_mes_atual) {
+    while (mesAtual != NULL) {
         /* Libera os compromissos do mês atual */ 
-        dia_t* dia = atual->dias;
-        while (dia != NULL) {
-            compromisso_t* compr = dia->comprs;
-            while (compr != NULL) {
-                compromisso_t* proxCompr = compr->prox;
-                destroi_compromisso(compr);
-                compr = proxCompr;
+        dia_t* listaDias = mesAtual->dias;
+        while (listaDias != NULL) {
+            compromisso_t* listaCompr = listaDias->comprs;
+            while (listaCompr != NULL) {
+                compromisso_t* proxCompr = listaCompr->prox;
+                destroi_compromisso(listaCompr);
+                listaCompr = proxCompr;
             }
-            dia_t* proxDia = dia->prox;
-            free(dia);
-            dia = proxDia;
+            dia_t* proxDia = listaDias->prox;
+            free(listaDias);
+            listaDias = proxDia;
         }
 
-        mes_t* proxAtual = prox;
-        prox = prox->prox;
-        free(atual);
-        atual = proxAtual;
+        mes_t* proxMes = mesAtual->prox;
+        free(mesAtual);
+        mesAtual = proxMes;
     }
 
-    /* Libera os compromissos do último mês */ 
-    dia_t* dia = atual->dias;
-    while (dia != NULL) {
-        compromisso_t* compr = dia->comprs;
-        while (compr != NULL) {
-            compromisso_t* proxCompr = compr->prox;
-            free(compr->descricao);
-            free(compr);
-            compr = proxCompr;
-        }
-        dia_t* proxDia = dia->prox;
-        free(dia);
-        dia = proxDia;
-    }
-
-    free(atual);
+    free(mesAtual);
     agenda->ptr_mes_atual = NULL;
     agenda->mes_atual = 0;
     free(agenda);
@@ -383,6 +368,14 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
     1: em caso de sucesso
     0: caso nao tenha encontrado o compr */
 /* [X] VOCÊ TÁ FUNCIONANDO */
+
+
+/*
+    1- acha o dia do compromisso na lista de dias
+    2- achar o compromisso na lista de compromissos
+        -> se for o primeiro, vai ter que mexer no ponteiro que aponta pro início da lista
+    3- remover o compromisso
+*/
 int desmarca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
     dia_t *aux = agenda->ptr_mes_atual->dias;
 
@@ -392,6 +385,15 @@ int desmarca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr)
         return 0;
     }
 
+    while((aux->prox != NULL) && (aux->dia != dia))
+        aux = aux->prox;
+
+    
+
+
+
+
+// -------------------------------------------------------------------------------
     if (aux->dia == dia) {
         printf("\ndia %d é o primeiro da lista\n", aux->dia);
         
