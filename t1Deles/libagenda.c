@@ -40,13 +40,16 @@ agenda_t *cria_agenda() {
 compromisso_t* cria_compromisso(horario_compromisso_t hc, int id, char* descricao) {
     compromisso_t* novoCompr = malloc(sizeof(compromisso_t));
     
-    if (novoCompr == NULL)
+    if (novoCompr == NULL) {
+        destroi_compromisso(novoCompr);
         return NULL;
-
+    }
+        
     novoCompr->descricao = malloc(strlen(descricao) + 1); /* +1 para o caractere nulo de terminação */
     
     if (novoCompr->descricao == NULL) {
-        free(novoCompr); 
+        destroi_descricao_compromisso(novoCompr);
+        destroi_compromisso(novoCompr); 
         return NULL; 
     }
 
@@ -167,9 +170,8 @@ int testa_intersec(dia_t *listaDias, compromisso_t *novoCompr) {
     return -1;
 }
 
-
 int procura_compr_remove(compromisso_t *compr, dia_t *listaDias) {
-compromisso_t *listaCompr = listaDias->comprs;
+    compromisso_t *listaCompr = listaDias->comprs;
 
     if(listaCompr == NULL)
         return 0;
@@ -222,10 +224,6 @@ compromisso_t *listaCompr = listaDias->comprs;
 
 /* [X] VOCÊ TÁ FUNCIONANDO */
 int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
-    horario_compromisso_t horario = hc_compr(compr);
-    compromisso_t *novoCompr = cria_compromisso(horario, compr->id, compr->descricao);
-    novoCompr->prox = NULL;
-
 /* MÊS VAZIO */
     if (agenda->ptr_mes_atual->dias == NULL) {
         dia_t *novoDia = malloc(sizeof(dia_t));
@@ -235,7 +233,7 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
 
         novoDia->dia = dia;
         novoDia->prox = NULL;
-        novoDia->comprs = novoCompr;
+        novoDia->comprs = compr;
 
         agenda->ptr_mes_atual->dias = novoDia;
 
@@ -250,36 +248,41 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
         if (aux == NULL) 
             return 0;
 
+        if(aux->comprs == NULL) {
+            aux->comprs = compr;
+            compr->prox = NULL;
+        }
+
         /* NOVO TERMINA ANTES DO PRIMEIRO COMEÇAR */
-        if (novoCompr->fim < aux->comprs->inicio) {
-            novoCompr->prox = aux->comprs;
-            aux->comprs = novoCompr;
-            // printf("--compromisso %d é o novo primeiro da lista\n\n", novoCompr->id);
+        if (compr->fim < aux->comprs->inicio) {
+            compr->prox = aux->comprs;
+            aux->comprs = compr;
+            // printf("--compromisso %d é o novo primeiro da lista\n\n", compr->id);
             return 1;
         }
 
         compromisso_t *atual = aux->comprs;
 
-        while ((atual->prox != NULL) && (novoCompr->inicio > atual->prox->fim)) 
+        while ((atual->prox != NULL) && (compr->inicio > atual->prox->fim)) 
             atual = atual->prox;
 
         /* ÚLTIMO DA LISTA */
         if (atual->prox == NULL) {
-            atual->prox = novoCompr;
-            // printf("--compromisso %d é o novo último da lista\n\n", novoCompr->id);
+            atual->prox = compr;
+            // printf("--compromisso %d é o novo último da lista\n\n", compr->id);
             return 1;
         }
 
         /* DECORRER DA LISTA */
-        if ((novoCompr->inicio > atual->fim) && (novoCompr->fim < atual->prox->inicio)) {
-            novoCompr->prox = atual->prox;
-            atual->prox = novoCompr;
-            // printf("--compromisso %d é novo na lista\n\n", novoCompr->id);
+        if ((compr->inicio > atual->fim) && (compr->fim < atual->prox->inicio)) {
+            compr->prox = atual->prox;
+            atual->prox = compr;
+            // printf("--compromisso %d é novo na lista\n\n", compr->id);
             return 1;
         }
 
         /* CONFLITO DE HORÁRIO */
-        // printf("--compromisso %d tem conflito de horário 3\n\n", novoCompr->id);
+        // printf("--compromisso %d tem conflito de horário 3\n\n", compr->id);
         return -1;
     }
 
@@ -293,7 +296,7 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
 
             novoDia->prox = agenda->ptr_mes_atual->dias;
             novoDia->dia = dia;
-            novoDia->comprs = novoCompr;
+            novoDia->comprs = compr;
             agenda->ptr_mes_atual->dias = novoDia;
             // printf("mudar cabeça\n");
             return 1;
@@ -316,41 +319,41 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
 
         /* ÚLTIMO DA LISTA */
         if (atual->prox == NULL) {
-            atual->prox = novoCompr;
-            // printf("--compromisso %d é o novo último da lista\n\n", novoCompr->id);
+            atual->prox = compr;
+            // printf("--compromisso %d é o novo último da lista\n\n", compr->id);
             return 1;
         }
 
     
         /* NOVO TERMINA ANTES DO PRIMEIRO COMEÇAR */
-        if (novoCompr->fim < aux->comprs->inicio) {
-            novoCompr->prox = aux->comprs;
-            aux->comprs = novoCompr;
-            // printf("--compromisso %d é o novo primeiro da lista\n\n", novoCompr->id);
+        if (compr->fim < aux->comprs->inicio) {
+            compr->prox = aux->comprs;
+            aux->comprs = compr;
+            // printf("--compromisso %d é o novo primeiro da lista\n\n", compr->id);
             return 1;
         }
 
 
-        while ((atual->prox != NULL) && (novoCompr->inicio > atual->prox->fim)) 
+        while ((atual->prox != NULL) && (compr->inicio > atual->prox->fim)) 
             atual = atual->prox;
         
         /* ÚLTIMO DA LISTA */
         if (atual->prox == NULL) {
-            atual->prox = novoCompr;
-            // printf("--compromisso %d é o novo último da lista\n\n", novoCompr->id);
+            atual->prox = compr;
+            // printf("--compromisso %d é o novo último da lista\n\n", compr->id);
             return 1;
         }
 
         /* DECORRER DA LISTA */
-        if ((novoCompr->inicio > atual->fim) && (novoCompr->fim < atual->prox->inicio)) {
-            novoCompr->prox = atual->prox;
-            atual->prox = novoCompr;
-            // printf("--compromisso %d é novo na lista\n\n", novoCompr->id);
+        if ((compr->inicio > atual->fim) && (compr->fim < atual->prox->inicio)) {
+            compr->prox = atual->prox;
+            atual->prox = compr;
+            // printf("--compromisso %d é novo na lista\n\n", compr->id);
             return 1;
         }
 
         /* CONFLITO DE HORÁRIO */
-        // printf("--compromisso %d tem conflito de horário 3\n\n", novoCompr->id);
+        // printf("--compromisso %d tem conflito de horário 3\n\n", compr->id);
         return -1;
     }
 
@@ -362,7 +365,7 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
 
         novoDia->dia = dia;
         novoDia->prox = aux->prox;
-        novoDia->comprs = novoCompr;
+        novoDia->comprs = compr;
 
         aux->prox = novoDia;
     }
@@ -390,8 +393,64 @@ int desmarca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr)
     }
 
     if (aux->dia == dia) {
-        // printf("\ndia é o primeiro da lista\n");
-        return procura_compr_remove(compr, agenda->ptr_mes_atual->dias);
+        printf("\ndia %d é o primeiro da lista\n", aux->dia);
+        
+
+        //compromisso_t *listaCompr = listaDias->comprs;
+
+        if(aux->comprs == NULL)
+            return 0;
+        
+    /* COMPROMISSO É O PRIMEIRO DA LISTA */
+        if (compr->id == aux->comprs->id) {
+            compromisso_t *remover = aux->comprs;
+
+            aux->comprs = aux->comprs->prox; /* Atualiza o ponteiro na lista */
+        
+            free(remover->descricao);
+            remover->descricao = NULL;
+        
+            free(remover);
+            remover = NULL;
+        
+            return 1;
+        }
+
+        while ((aux->comprs->prox != NULL) && (compr->id != aux->comprs->prox->id)) 
+            aux->comprs = aux->comprs->prox;
+                
+        /* COMPROMISSO É O ÚLTIMO COMPROMISSO DA LISTA */
+        if (aux->comprs->prox == NULL) {
+            free(aux->comprs->descricao);
+            aux->comprs->descricao = NULL;
+            
+            free(aux->comprs);
+            aux->comprs = NULL;
+
+            return 1;
+        }
+
+        /* COMPROMISSO NO DECORRER DA LISTA */
+        if (compr->id == aux->comprs->prox->id) {
+            compromisso_t *remover = aux->comprs->prox;
+                    
+            aux->comprs->prox = remover->prox;
+
+            free(remover->descricao);
+            remover->descricao = NULL;
+
+            free(remover);
+            remover = NULL;
+
+            return 1;
+        }
+
+        /* COMPROMISSO NÃO ESTÁ NA LISTA */
+        return 0;
+
+
+
+
     }
 
     /* MÊS COM UM DIA MALLOCADO */
@@ -412,8 +471,61 @@ int desmarca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr)
         return 0;
 
     /* DIA DO COMPROMISSO ESTÁ NA LISTA */
-    if (aux->prox->dia == dia)
-        return procura_compr_remove(compr, aux->prox);
+    if (aux->prox->dia == dia) {
+        if(aux->prox->comprs == NULL)
+            return 0;
+
+
+
+        /* COMPROMISSO É O PRIMEIRO DA LISTA */
+        if (compr->id == aux->prox->comprs->id) {
+            compromisso_t *remover = aux->comprs;
+
+            aux->comprs = aux->comprs->prox; /* Atualiza o ponteiro na lista */
+        
+            free(remover->descricao);
+            remover->descricao = NULL;
+        
+            free(remover);
+            remover = NULL;
+        
+            return 1;
+        }
+
+        while ((aux->prox->comprs->prox != NULL) && (compr->id != aux->prox->comprs->prox->id)) 
+            aux->prox->comprs = aux->prox->comprs->prox;
+                
+        /* COMPROMISSO É O ÚLTIMO COMPROMISSO DA LISTA */
+        if (aux->prox->comprs->prox == NULL) {
+            free(aux->prox->comprs->descricao);
+            aux->prox->comprs->descricao = NULL;
+            
+            free(aux->prox->comprs);
+            aux->prox->comprs = NULL;
+
+            return 1;
+        }
+
+        /* COMPROMISSO NO DECORRER DA LISTA */
+        if (compr->id == aux->prox->comprs->prox->id) {
+            compromisso_t *remover = aux->prox->comprs->prox;
+                    
+            aux->prox->comprs->prox = remover->prox;
+
+            free(remover->descricao);
+            remover->descricao = NULL;
+
+            free(remover);
+            remover = NULL;
+
+            return 1;
+        }
+
+    }
+        
+        
+        /* COMPROMISSO NÃO ESTÁ NA LISTA */
+        return 0;
 
     return 0;
 }
