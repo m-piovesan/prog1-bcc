@@ -131,6 +131,9 @@ void destroi_agenda(agenda_t* agenda) {
     RETORNA 1 EM CASO DE SUCESSO, 0 EM CASO DE ERRO E -1 EM CASO DE INTERSECÇÃO */
 /* [X] VOCÊ TÁ FUNCIONANDO */
 int testa_intersec(dia_t *listaDias, compromisso_t *novoCompr) {
+    if (listaDias == NULL) 
+        return 0;
+    
     /* NOVO TERMINA ANTES DO PRIMEIRO COMEÇAR */
     if (novoCompr->fim < listaDias->comprs->inicio) {
         novoCompr->prox = listaDias->comprs;
@@ -218,10 +221,9 @@ compromisso_t *listaCompr = listaDias->comprs;
 int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
     horario_compromisso_t horario = hc_compr(compr);
     compromisso_t *novoCompr = cria_compromisso(horario, compr->id, compr->descricao);
-    dia_t *aux = agenda->ptr_mes_atual->dias; // você tá errado de alguma forma
 
-    /* MÊS VAZIO */
-    if (aux == NULL) {
+/* MÊS VAZIO */
+    if (agenda->ptr_mes_atual->dias == NULL) {
         dia_t *novoDia = malloc(sizeof(dia_t));
 
         if (novoDia == NULL)
@@ -237,11 +239,29 @@ int marca_compromisso_agenda(agenda_t* agenda, int dia, compromisso_t* compr) {
         return 1;
     }
 
+    dia_t *aux = agenda->ptr_mes_atual->dias; // você tá errado de alguma forma
+
+    // /* MÊS VAZIO */
+    // if (aux == NULL) {
+    //     dia_t *novoDia = malloc(sizeof(dia_t));
+
+    //     if (novoDia == NULL)
+    //         return 0;
+
+    //     novoDia->dia = dia;
+    //     novoDia->prox = NULL;
+    //     novoDia->comprs = novoCompr;
+
+    //     agenda->ptr_mes_atual->dias = novoDia;
+
+    //     // printf("mês vazio\n");
+    //     return 1;
+    // }
+
     /* COMPROMISSO MARCADO PARA O PRIMEIRO DIA DO MÊS */
-    if (dia == aux->dia) {
-        // printf("compr primeiro dia do mês\n");
-        return testa_intersec(aux, novoCompr);
-    }
+    if (dia == aux->dia)
+        return testa_intersec(agenda->ptr_mes_atual->dias, novoCompr);
+    
 
     /* MUDAR QUEM É A CABEÇA DA LISTA (novo dia menor que dia alocado) */
     if (dia < aux->dia) {
